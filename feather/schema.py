@@ -3,6 +3,7 @@ save deserialized data to a collection
 
 The connections to mongodb are cached. Inspired by MongoEngine
 """
+import simplejson
 from bson.objectid import ObjectId
 from marshmallow import Schema, fields
 from feather.connection import get_database
@@ -21,6 +22,9 @@ class MongoSchema(Schema):
     This enables marshmallow to behave as an ORM to MongoDB
     """
     _id = fields.Str(dump_only=True)
+
+    class Meta:
+        json_module = simplejson
 
     def __init__(self, *args, **kwargs):
         super(MongoSchema, self).__init__(*args, **kwargs)
@@ -68,7 +72,6 @@ class MongoSchema(Schema):
         """Shortcut for 'loads' that follows HTTP naming conventions
         """
         validated = self.loads(data)
-
         # Retrieve the collection in which this document should be inserted
         collection = self.get_collection()
 

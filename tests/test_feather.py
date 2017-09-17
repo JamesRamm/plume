@@ -1,4 +1,5 @@
 import json
+import codecs
 import pytest
 import falcon
 from falcon import testing
@@ -37,8 +38,7 @@ class TestUsers:
     def test_list_users(self, client):
         doc = self._make_user()
         response = client.simulate_get('/users')
-        result_doc = json.loads(response.content)
-
+        result_doc = json.loads(response.content.decode('utf-8'))
         assert doc['name'] == result_doc[0]['name']
         assert doc['email'] == result_doc[0]['email']
         assert result_doc[0]['slug']
@@ -69,4 +69,3 @@ class TestUsers:
             headers={'content-type': 'application/json'}
         )
         assert response.status == falcon.HTTP_ACCEPTED
-

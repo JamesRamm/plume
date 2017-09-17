@@ -34,6 +34,7 @@ class ResourceList(object):
         # Handle JSON
         if req.content_type == 'application/json':
             data = req.bounded_stream.read()
+            print('POST DATA', data)
             self._schema.post(data)
             resp.status = falcon.HTTP_CREATED
         else:
