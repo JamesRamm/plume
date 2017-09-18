@@ -80,6 +80,7 @@ class Item(Collection):
             data = req.bounded_stream.read()
             self._schema.put(kwargs, data)
             resp.status = falcon.HTTP_ACCEPTED
+            resp.location = self.uri_template.format(**kwargs)
         else:
             self.make_error(resp, 'Unknown content type')
 
@@ -88,8 +89,10 @@ class Item(Collection):
             data = req.bounded_stream.read()
             self._schema.patch(kwargs, data)
             resp.status = falcon.HTTP_ACCEPTED
+            resp.location = self.uri_template.format(**kwargs)
         else:
             self.make_error(resp, 'Unknown content type')
 
     def _delete(self, req, resp, **kwargs):
         self._schema.delete(kwargs)
+        resp.status = falcon.HTTP_ACCEPTED
