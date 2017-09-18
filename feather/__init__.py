@@ -1,5 +1,6 @@
 import falcon
-from feather.resource import Collection, Item
+from feather.resource import Collection, Item, FileCollection
+from feather.storage import FileStore
 
 def create_app(resources):
     """Create a falcon app and add a route

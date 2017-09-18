@@ -1,6 +1,6 @@
 """Resource classes for creating a JSON restful API.
 """
-import json
+import mimetypes
 import falcon
 
 class Collection(object):
@@ -26,15 +26,6 @@ class Collection(object):
         """
         return self._uri
 
-    @uri_template.setter
-    def uri_template(self, value):
-        self._uri = value
-
-    def make_error(self, resp, message, status=falcon.HTTP_BAD_REQUEST):
-        resp.status = status
-        resp.body = json.dumps({'message': message})
-        resp.content_type = falcon.MEDIA_JSON
-
     def _get(self, req, resp):
         # dump all schema objects
         cursor = self._schema.find()
@@ -50,7 +41,7 @@ class Collection(object):
             self._schema.post(data)
             resp.status = falcon.HTTP_CREATED
         else:
-            self.make_error(resp, 'Unknown content type')
+            raise falcon.HTTPBadRequest(title='Unknown content type')
 
 
 class Item(Collection):
@@ -58,12 +49,6 @@ class Item(Collection):
     """
     def __init__(self, uri_template, schema, methods=('get', 'patch', 'put', 'delete')):
         super(Item, self).__init__(uri_template, schema, methods)
-        self._uri_param = uri_template.split('{')[1].split('}')[0]
-
-    @Collection.uri_template.setter
-    def uri_template(self, value):
-        self._uri = value
-        self._uri_param = value.split('{')[1].split('}')[0]
 
     def _get(self, req, resp, **kwargs):
         document = self._schema.get(kwargs)
@@ -73,7 +58,7 @@ class Item(Collection):
             resp.content_type = falcon.MEDIA_JSON
             resp.status = falcon.HTTP_OK
         else:
-            self.make_error(resp, 'No matches found')
+            raise falcon.HTTPBadRequest(title='Unknown content type')
 
     def _put(self, req, resp, **kwargs):
         if req.content_type == 'application/json':
@@ -82,7 +67,7 @@ class Item(Collection):
             resp.status = falcon.HTTP_ACCEPTED
             resp.location = self.uri_template.format(**kwargs)
         else:
-            self.make_error(resp, 'Unknown content type')
+            raise falcon.HTTPBadRequest(title='Unknown content type')
 
     def _patch(self, req, resp, **kwargs):
         if req.content_type == 'application/json':
@@ -91,8 +76,39 @@ class Item(Collection):
             resp.status = falcon.HTTP_ACCEPTED
             resp.location = self.uri_template.format(**kwargs)
         else:
-            self.make_error(resp, 'Unknown content type')
+            raise falcon.HTTPBadRequest(title='Unknown content type')
 
     def _delete(self, req, resp, **kwargs):
         self._schema.delete(kwargs)
         resp.status = falcon.HTTP_ACCEPTED
+
+
+class FileCollection(object):
+    def __init__(self, store, uri_template='/files', content_types=None):
+        self._store = store
+        self._uri = uri_template
+        self._content_types = content_types
+
+    def on_get(self, req, resp):
+        resp.status = falcon.HTTP_200
+
+    def on_post(self, req, resp):
+        if self._content_types and req.content_type not in self._content_types:
+            raise falcon.HTTPBadRequest(
+                title='Bad content type',
+                description='Content type must be one of {}'.format(self._content_types))
+
+        name = self._store.save(req.stream, req.content_type)
+        resp.status = falcon.HTTP_CREATED
+        resp.location = "{}/{}".format(self._uri, name)
+
+
+class FileItem(FileCollection):
+    def __init__(self, store, uri_template='/files/{name}', content_types=None):
+        super(FileItem, self).__init__(store, uri_template, content_types)
+        self._uri_param = self._uri.split('{')[1].split('}')[0]
+
+    def on_get(self, req, resp, **kwargs):
+        name = kwargs[self._uri_param]
+        resp.content_type = mimetypes.guess_type(name)[0]
+        resp.stream, resp.stream_len = self._store.open(name)

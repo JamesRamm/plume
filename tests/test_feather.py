@@ -1,11 +1,12 @@
 import json
-import codecs
+import os
+
 import pytest
 import falcon
 from falcon import testing
 
 from feather.connection import connect, disconnect
-from feather.resource import Item
+from feather import Item, FileCollection, FileStore
 from .app import create, UserSchema
 
 API = create()
@@ -72,8 +73,31 @@ class TestUsers:
         assert response.status == falcon.HTTP_ACCEPTED
 
 
-class TestItem:
+class TestFileResource:
+    def test_posted_image_gets_saved(self, client):
 
-    def test_uri_param(self, client):
-        item = Item('users/{email}', UserSchema())
-        assert item._uri_param == 'email'
+        # Create the file store and resource
+        path = os.path.dirname(__file__)
+        store = FileStore(path, namegen=lambda: 'test')
+        resource = FileCollection(store)
+        API.add_route(resource._uri, resource)
+
+        # When the service receives an image through POST...
+        fake_image_bytes = b'fake-image-bytes'
+        response = client.simulate_post(
+            '/files',
+            body=fake_image_bytes,
+            headers={'content-type': 'image/png'}
+        )
+
+        # ...it must return a 201 code, save the file, and return the
+        # image's resource location.
+        assert response.status == falcon.HTTP_CREATED
+        assert response.headers['location'] == '/files/test.png'
+
+        expected_path = os.path.join(path, "test.png")
+        assert os.path.exists(expected_path)
+        os.remove(expected_path)
+
+    def test_can_download(self, client):
+        pass
