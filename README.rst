@@ -13,6 +13,10 @@ feather
         :target: https://feather.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://landscape.io/github/JamesRamm/feather/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/JamesRamm/feather/master
+   :alt: Code Health
+
 .. image:: https://pyup.io/repos/github/JamesRamm/feather/shield.svg
      :target: https://pyup.io/repos/github/JamesRamm/feather/
      :alt: Updates
