@@ -1,10 +1,13 @@
-import falcon
+"""Resource classes for creating a JSON restful API.
+"""
 import json
+import falcon
 
-class ResourceList(object):
-    '''Generic class for listing/creating data via a schema
-    '''
-    def __init__(self, schema, methods=('get', 'post')):
+class Collection(object):
+    """Generic class for listing/creating data via a schema
+    """
+    def __init__(self, uri_template, schema, methods=('get', 'post')):
+        self._uri = uri_template
         self._schema = schema
 
         # We dynamically set attributes for the expected
@@ -16,6 +19,16 @@ class ResourceList(object):
             method_name = 'on_{}'.format(method)
             handler = getattr(self, '_{}'.format(method))
             setattr(self, method_name, handler)
+
+    @property
+    def uri_template(self):
+        """The URI for this resource
+        """
+        return self._uri
+
+    @uri_template.setter
+    def uri_template(self, value):
+        self._uri = value
 
     def make_error(self, resp, message, status=falcon.HTTP_BAD_REQUEST):
         resp.status = status
@@ -34,19 +47,23 @@ class ResourceList(object):
         # Handle JSON
         if req.content_type == 'application/json':
             data = req.bounded_stream.read()
-            print('POST DATA', data)
             self._schema.post(data)
             resp.status = falcon.HTTP_CREATED
         else:
             self.make_error(resp, 'Unknown content type')
 
 
-class ResourceDetail(ResourceList):
+class Item(Collection):
     """Generic class for getting/editing a single data item via a schema
     """
-    def __init__(self, schema, methods=('get', 'patch', 'put', 'delete'), uri_param='email'):
-        super(ResourceDetail, self).__init__(schema, methods)
-        self._uri_param = uri_param
+    def __init__(self, uri_template, schema, methods=('get', 'patch', 'put', 'delete')):
+        super(Item, self).__init__(uri_template, schema, methods)
+        self._uri_param = uri_template.split('{')[1].split('}')[0]
+
+    @Collection.uri_template.setter
+    def uri_template(self, value):
+        self._uri = value
+        self._uri_param = value.split('{')[1].split('}')[0]
 
     def _get(self, req, resp, **kwargs):
         document = self._schema.get(kwargs)

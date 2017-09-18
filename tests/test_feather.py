@@ -5,9 +5,9 @@ import falcon
 from falcon import testing
 
 from feather.connection import connect, disconnect
-from .app import create_app, UserSchema
+from .app import create, UserSchema
 
-API = create_app()
+API = create()
 
 @pytest.fixture
 def client():

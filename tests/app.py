@@ -3,11 +3,10 @@
 Serves as an example of making a web app with feather
 """
 from datetime import datetime
-
-import falcon
 from marshmallow import Schema, fields
 from feather.schema import MongoSchema
-from feather.resource import ResourceList, ResourceDetail
+from feather.resource import Collection, Item
+from feather import create_app
 
 class UserSchema(MongoSchema):
     """Example user schema for testing
@@ -33,13 +32,9 @@ class ProfileSchema(Schema):
     profile_image = fields.Url(load_from='profileImage', dump_to='profileImage')
 
 
-def create_app():
+def create():
     """Create the falcon app
     """
-    api = falcon.API()
     user = UserSchema()
-    user_collection = ResourceList(user)
-    user_item = ResourceDetail(user)
-    api.add_route('/users', user_collection)
-    api.add_route('/users/{email}', user_item)
-    return api
+    resources = (Collection('/users', user), Item('/users/{email}', user))
+    return create_app(resources)
