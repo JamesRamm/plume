@@ -1,5 +1,5 @@
 import falcon
-
+from feather.resource import Collection, Item
 
 def create_app(resources):
     """Create a falcon app and add a route

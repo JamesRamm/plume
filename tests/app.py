@@ -5,8 +5,7 @@ Serves as an example of making a web app with feather
 from datetime import datetime
 from marshmallow import Schema, fields
 from feather.schema import MongoSchema
-from feather.resource import Collection, Item
-from feather import create_app
+from feather import create_app, Collection, Item
 
 class UserSchema(MongoSchema):
     """Example user schema for testing

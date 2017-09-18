@@ -5,6 +5,7 @@ import falcon
 from falcon import testing
 
 from feather.connection import connect, disconnect
+from feather.resource import Item
 from .app import create, UserSchema
 
 API = create()
@@ -69,3 +70,10 @@ class TestUsers:
             headers={'content-type': 'application/json'}
         )
         assert response.status == falcon.HTTP_ACCEPTED
+
+
+class TestItem:
+
+    def test_uri_param(self, client):
+        item = Item('users/{email}', UserSchema())
+        assert item._uri_param == 'email'
