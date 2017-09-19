@@ -4,7 +4,7 @@ import mimetypes
 import falcon
 import simplejson
 
-class ResourceURI:
+class ResourceURI(object):
     """Base class for encapsulating a resources' URI.
 
     By encapsulating the URI, we can provide factory methods

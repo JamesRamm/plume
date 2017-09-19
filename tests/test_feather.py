@@ -6,7 +6,7 @@ import falcon
 from falcon import testing
 
 from feather.connection import connect, disconnect
-from feather import Item, FileCollection, FileStore
+from feather import FileCollection, FileStore
 from .app import create, UserSchema
 
 API = create()
