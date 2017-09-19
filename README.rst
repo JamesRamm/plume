@@ -96,7 +96,8 @@ The following example creates a basic JSON API for a representation of a user.
     # deleting.
     # The ``create_app`` function registers your routes & resources with falcon and returns the ``API``
     # instance.
-    resources = (Collection('/users', user), Item('/users/{email}', user))
+    resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
+
     api = create_app(resources)
 
 

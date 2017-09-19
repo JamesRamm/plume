@@ -74,13 +74,19 @@ class TestUsers:
 
 
 class TestFileResource:
+
+    def create_resource(self):
+        # Create the file store and resource
+        path = os.path.dirname(__file__)
+        store = FileStore(path, namegen=lambda: '0xa6a6a6')
+        resource = FileCollection(store)
+        API.add_route(resource._uri, resource)
+        return store
+
     def test_posted_image_gets_saved(self, client):
 
         # Create the file store and resource
-        path = os.path.dirname(__file__)
-        store = FileStore(path, namegen=lambda: 'test')
-        resource = FileCollection(store)
-        API.add_route(resource._uri, resource)
+        store = self.create_resource()
 
         # When the service receives an image through POST...
         fake_image_bytes = b'fake-image-bytes'
@@ -93,11 +99,28 @@ class TestFileResource:
         # ...it must return a 201 code, save the file, and return the
         # image's resource location.
         assert response.status == falcon.HTTP_CREATED
-        assert response.headers['location'] == '/files/test.png'
+        assert response.headers['location'] == '/files/0xa6a6a6.png'
 
-        expected_path = os.path.join(path, "test.png")
+        expected_path = os.path.join(store._storage_path, "0xa6a6a6.png")
         assert os.path.exists(expected_path)
-        os.remove(expected_path)
+        os.unlink(expected_path)
+
+    def test_list_files(self, client):
+        store = self.create_resource()
+        # create an image
+        name = store._namegen()
+        filename = "{}.png".format(name)
+        path = os.path.join(store._storage_path, filename)
+        with open(path, 'wb') as fobj:
+            fobj.write(b'fake image')
+
+        response = client.simulate_get(
+            '/files'
+        )
+        result_doc = json.loads(response.content.decode('utf-8'))
+        assert response.status == falcon.HTTP_200
+        assert filename in result_doc
+        os.unlink(path)
 
     def test_can_download(self, client):
         pass

@@ -1,5 +1,5 @@
 import falcon
-from feather.resource import Collection, Item, FileCollection
+from feather.resource import Collection, Item, FileCollection, FileItem
 from feather.storage import FileStore
 
 def create_app(resources):

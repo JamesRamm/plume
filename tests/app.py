@@ -35,5 +35,5 @@ def create():
     """Create the falcon app
     """
     user = UserSchema()
-    resources = (Collection('/users', user), Item('/users/{email}', user))
+    resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
     return create_app(resources)

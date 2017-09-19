@@ -12,7 +12,6 @@ def unique_id():
 
 
 class FileStore(object):
-
     _CHUNK_SIZE_BYTES = 4096
 
     # Note the use of dependency injection for standard library
@@ -54,3 +53,9 @@ class FileStore(object):
         stream_len = os.path.getsize(image_path)
 
         return stream, stream_len
+
+    def list(self):
+        uploads = [name for name
+                   in os.listdir(self._storage_path)
+                   if self._name_pattern.match(os.path.splitext(name)[0])]
+        return uploads
