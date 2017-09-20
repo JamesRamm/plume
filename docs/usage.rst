@@ -26,18 +26,25 @@ you pretty much declare it like any Marshmallow schema:
 
 .. code-block:: python
 
+    import simplejson
     from marshmallow import fields
     from feather.schema import MongoSchema
     from feather.connection import connect
     from feather import create_app, Collection, Item
 
     class Person(MongoSchema):
+
+        class Meta:
+            json_module = simplejson
+            constraints = (('field', {}), ('email', {'unique': True}))
+
         name = fields.Str()
         email = fields.Email(required=True)
 
 You can interact with it as any marshmallow schema - using ``loads`` and ``dumps`` will not affect the MongoDB database.
 ``MongoSchema`` provides a few new methods which will use marshmallow to serialize/deserialize and validate the data and
 and save (or retrieve) it from MongoDB.
+Note the ``constraints`` option. This is to specify which fields should have indexes created.
 
 Creating resources
 ------------------
@@ -48,9 +55,12 @@ You simply pass your schema and the route you want to use to them:
 
 .. code-block:: python
 
+    connect()
     person = Person()
     resources = (Collection('/people', person), Item('/people/{email}', person))
 
+
+The ``connect`` function takes the same arguments as pymongo's ``MongoClient`` and must be called once before creating a schema instance.
 
 Creating the app
 ----------------
@@ -60,10 +70,4 @@ You can use the ``create_app`` factory method to route all the resources, instea
 .. code-block:: python
 
     api = create_app(resources)
-    connect()
-
-The ``connect`` function takes the same arguments as pymongo's ``MongoClient`` and returns the
-``MongoClient`` instance (in case we need to do more custom interaction with pymongo).
-Feathers' ``connect`` function caches the connection & database so that ``MongoSchema`` can
-retrieve it when required.
 

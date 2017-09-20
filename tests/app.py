@@ -6,10 +6,16 @@ from datetime import datetime
 from marshmallow import Schema, fields
 from feather.schema import MongoSchema
 from feather import create_app, Collection, Item
+import simplejson
 
 class UserSchema(MongoSchema):
     """Example user schema for testing
     """
+
+    class Meta:
+        json_module = simplejson
+        constraints = (('name', {}), ('email', {'unique': True}))
+
     name = fields.Str(required=True)
     email = fields.Email(required=True)
     created = fields.DateTime(
@@ -27,6 +33,9 @@ class ProfileSchema(Schema):
     """Example of nesting a schema.
     In mongodb, this will be a nested document
     """
+    class Meta:
+        json_module = simplejson
+
     biography = fields.Str()
     profile_image = fields.Url(load_from='profileImage', dump_to='profileImage')
 

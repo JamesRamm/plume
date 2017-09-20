@@ -97,6 +97,12 @@ The following example creates a basic JSON API for a representation of a user.
         biography = fields.Str()
         profile_image = fields.Url(load_from='profileImage', dump_to='profileImage')
 
+
+
+    # Connect to the database *before* making schema instance.
+    # The ``connect`` function takes the same arguments as pymongo's
+    # ``MongoClient``. Here we connect to localhost.
+    connect()
     user = UserSchema()
 
     # ``Collection`` and ``Item`` are falcon Resource classes which provide the HTTP method handlers.
@@ -110,12 +116,7 @@ The following example creates a basic JSON API for a representation of a user.
     # The ``create_app`` function registers your routes & resources with falcon and returns the ``API``
     # instance.
     resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
-
     api = create_app(resources)
-
-    # We also need to connect to the database. The ``connect`` function takes the same
-    # arguments as pymongo's ``MongoClient``. Here we connect to localhost.
-    connect()
 
 
 

@@ -9,6 +9,7 @@ Contents:
    readme
    installation
    usage
+   recipes
    modules
    contributing
    authors

@@ -5,12 +5,24 @@ The connections to mongodb are cached. Inspired by MongoEngine
 """
 import simplejson
 from bson.objectid import ObjectId
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, SchemaOpts
 from feather.connection import get_database
 
 def _check_object_id(filter_spec):
+    """Replaces the object id string in a filter spec with a pymongo
+    ``ObjectId``
+    """
     if '_id' in filter_spec:
         filter_spec['_id'] = ObjectId(filter_spec['_id'])
+
+
+class MonogSchemaOpts(SchemaOpts):
+    """Adds 'constraints' option
+    """
+    def __init__(self, meta, **kwargs):
+        SchemaOpts.__init__(self, meta, **kwargs)
+        self.constraints = getattr(meta, 'constraints', ())
+
 
 class MongoSchema(Schema):
     """A Marshmallow schema backed by MongoDB
@@ -21,29 +33,35 @@ class MongoSchema(Schema):
 
     This enables marshmallow to behave as an ORM to MongoDB
     """
-    _id = fields.Str(dump_only=True)
+    OPTIONS_CLASS = MonogSchemaOpts
 
-    class Meta:
-        json_module = simplejson
+    _id = fields.Str(dump_only=True)
 
     def __init__(self, *args, **kwargs):
         super(MongoSchema, self).__init__(*args, **kwargs)
 
         # Name for the table/collection in the database
-        self.__name = None
+        self._name = kwargs.get('name', None)
 
-    def __db_name(self):
+        # Create any constraints for this collection
+        self._create_constraints(self.get_collection())
+
+    def _db_name(self):
         """Generate a name for the backend representation of this schema.
         I.e the name for the mongodb collection, sql table or disk file
         """
-        if not self.__name:
+        if not self._name:
             class_name = self.__class__.__name__
             # Get the name of the current package. The last entry will be the module name
             # which we dont want
             name_parts = __name__.split('.')[:-1]
             name_parts.extend(class_name.lower())
-            self.__name = "_".join(name_parts)
-        return self.__name
+            self._name = "_".join(name_parts)
+        return self._name
+
+    def _create_constraints(self, collection):
+        for key, kwargs in self.opts.constraints:
+            collection.create_index(key, **kwargs)
 
     def get_collection(self):
         """Return the collection associated with this schema
@@ -51,7 +69,7 @@ class MongoSchema(Schema):
         # We get the connected mongo database and generate a collection
         # name based on the name of this schema. Mongodb will create the
         # collection if it doesn't already exist
-        name = self.__db_name()
+        name = self._db_name()
         collection = get_database()[name]
         return collection
 

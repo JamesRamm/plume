@@ -9,14 +9,12 @@ from feather.connection import connect, disconnect
 from feather import FileCollection, FileStore
 from .app import create, UserSchema
 
-API = create()
-
 @pytest.fixture
 def client():
-    client = connect(database='test')
-    yield testing.TestClient(API)
+    conn = connect(database='test')
+    yield testing.TestClient(create())
     # Drop the test database
-    client.drop_database('test')
+    conn.drop_database('test')
     disconnect()
 
 
@@ -75,18 +73,18 @@ class TestUsers:
 
 class TestFileResource:
 
-    def create_resource(self):
+    def create_resource(self, client):
         # Create the file store and resource
         path = os.path.dirname(__file__)
         store = FileStore(path, namegen=lambda: '0xa6a6a6')
         resource = FileCollection(store)
-        API.add_route(resource._uri, resource)
+        client.app.add_route(resource._uri, resource)
         return store
 
     def test_posted_image_gets_saved(self, client):
 
         # Create the file store and resource
-        store = self.create_resource()
+        store = self.create_resource(client)
 
         # When the service receives an image through POST...
         fake_image_bytes = b'fake-image-bytes'
@@ -106,7 +104,7 @@ class TestFileResource:
         os.unlink(expected_path)
 
     def test_list_files(self, client):
-        store = self.create_resource()
+        store = self.create_resource(client)
         # create an image
         name = store._namegen()
         filename = "{}.png".format(name)
@@ -124,3 +122,18 @@ class TestFileResource:
 
     def test_can_download(self, client):
         pass
+
+class TestSchema:
+
+    def test_constraints(self):
+        """Test the constraints specified on
+        the schema were created
+        """
+        schema = UserSchema()
+        coll = schema.get_collection()
+        indexes = coll.index_information()
+        for key, kwargs in schema.opts.constraints:
+            index_key = "{}_1".format(key)
+            assert index_key in indexes
+            for item in kwargs:
+                assert item in indexes[index_key]
