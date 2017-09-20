@@ -8,7 +8,7 @@ def unique_id():
     """Simplistic unique ID generation.
     The returned ID is just the current timestamp (in ms) converted to hex
     """
-    return hex(int(time()*1000))
+    return hex(int(time()*1000000))
 
 
 class FileStore(object):
@@ -28,6 +28,10 @@ class FileStore(object):
         self._fopen = fopen
         self._name_pattern = re.compile(name_pattern)
 
+    def _validate_filename(self, filename):
+        name = os.path.splitext(filename)[0]
+        return self._name_pattern.match(name)
+
     def save(self, stream, image_content_type):
         ext = mimetypes.guess_extension(image_content_type)
         name = '{uuid}{ext}'.format(uuid=self._namegen(), ext=ext)
@@ -45,7 +49,7 @@ class FileStore(object):
 
     def open(self, name):
         # Validate the requested filename
-        if not self._name_pattern.match(name):
+        if not self._validate_filename(name):
             raise IOError('File not found')
 
         image_path = os.path.join(self._storage_path, name)
@@ -57,5 +61,5 @@ class FileStore(object):
     def list(self):
         uploads = [name for name
                    in os.listdir(self._storage_path)
-                   if self._name_pattern.match(os.path.splitext(name)[0])]
+                   if self._validate_filename(name)]
         return uploads

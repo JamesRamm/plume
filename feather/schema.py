@@ -4,8 +4,9 @@ save deserialized data to a collection
 The connections to mongodb are cached. Inspired by MongoEngine
 """
 import simplejson
+import pymongo
 from bson.objectid import ObjectId
-from marshmallow import Schema, fields, SchemaOpts
+from marshmallow import Schema, fields, SchemaOpts, ValidationError
 from feather.connection import get_database
 
 def _check_object_id(filter_spec):
@@ -55,7 +56,7 @@ class MongoSchema(Schema):
             # Get the name of the current package. The last entry will be the module name
             # which we dont want
             name_parts = __name__.split('.')[:-1]
-            name_parts.extend(class_name.lower())
+            name_parts.append(class_name.lower())
             self._name = "_".join(name_parts)
         return self._name
 
@@ -94,12 +95,16 @@ class MongoSchema(Schema):
         collection = self.get_collection()
 
         # Insert document(s) into the collection
-        if self.many:
-            collection.insert_many(validated.data)
-        else:
-            collection.insert_one(validated.data)
+        try:
+            if self.many:
+                collection.insert_many(validated.data)
+            else:
+                collection.insert_one(validated.data)
+        except pymongo.errors.DuplicateKeyError as error:
+            validated.errors['duplicate_key'] = error.details
 
-        return validated.data
+        return validated
+
 
     def patch(self, filter_spec, data):
         """'Patch' (update) an existing document
@@ -107,7 +112,12 @@ class MongoSchema(Schema):
         validated = self.loads(data, partial=True)
         collection = self.get_collection()
         _check_object_id(filter_spec)
-        collection.update_one(filter_spec, {"$set": validated.data})
+        try:
+            collection.update_one(filter_spec, {"$set": validated.data})
+        except pymongo.errors.DuplicateKeyError as error:
+            validated.errors['duplicate_key'] = error.details
+
+        return validated
 
     def put(self, filter_spec, data):
         """'Put' (replace) an existing document
@@ -115,7 +125,12 @@ class MongoSchema(Schema):
         validated = self.loads(data)
         collection = self.get_collection()
         _check_object_id(filter_spec)
-        collection.replace_one(filter_spec, validated.data)
+        try:
+            collection.replace_one(filter_spec, validated.data)
+        except pymongo.errors.DuplicateKeyError as error:
+            validated.errors['duplicate_key'] = error.details
+
+        return validated
 
     def delete(self, filter_spec):
         """Delete an existing document
