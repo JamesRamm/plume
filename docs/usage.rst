@@ -28,6 +28,7 @@ you pretty much declare it like any Marshmallow schema:
 
     from marshmallow import fields
     from feather.schema import MongoSchema
+    from feather.connection import connect
     from feather import create_app, Collection, Item
 
     class Person(MongoSchema):
@@ -59,11 +60,10 @@ You can use the ``create_app`` factory method to route all the resources, instea
 .. code-block:: python
 
     api = create_app(resources)
+    connect()
 
-
-Other Features
----------------
-
-- ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
-    to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
+The ``connect`` function takes the same arguments as pymongo's ``MongoClient`` and returns the
+``MongoClient`` instance (in case we need to do more custom interaction with pymongo).
+Feathers' ``connect`` function caches the connection & database so that ``MongoSchema`` can
+retrieve it when required.
 

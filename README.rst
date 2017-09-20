@@ -24,6 +24,18 @@ feather
 
 Easy webapps with falcon & mongodb
 
+Features
+---------------
+
+- Simple interface to MongoDB using ``marshmallow`` schemas. This allows a single document
+  definition which also provides serialization and validation
+
+- Standard ``Resource`` classes for creating a full CRUD JSON API for REST collections and items.
+
+- ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
+    to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
+
+
 
 Example
 --------
@@ -34,6 +46,7 @@ The following example creates a basic JSON API for a representation of a user.
 
     from datetime import datetime
     from feather import create_app, schema, Collection, Item
+    from feather import connect
     from marshmallow import fields, Schema
 
     class UserSchema(schema.MongoSchema):
@@ -99,6 +112,11 @@ The following example creates a basic JSON API for a representation of a user.
     resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
 
     api = create_app(resources)
+
+    # We also need to connect to the database. The ``connect`` function takes the same
+    # arguments as pymongo's ``MongoClient``. Here we connect to localhost.
+    connect()
+
 
 
 

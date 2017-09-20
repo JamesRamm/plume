@@ -67,7 +67,7 @@ class Collection(ResourceURI):
             self._schema.post(data)
             resp.status = falcon.HTTP_CREATED
         else:
-            raise falcon.HTTPBadRequest(title='Unknown content type')
+            raise falcon.HTTPUnsupportedMediaType('Expected application/json')
 
 
 class Item(Collection):
@@ -84,7 +84,7 @@ class Item(Collection):
             resp.content_type = falcon.MEDIA_JSON
             resp.status = falcon.HTTP_OK
         else:
-            raise falcon.HTTPBadRequest(title='Unknown content type')
+            raise falcon.HTTPUnsupportedMediaType('Expected application/json')
 
     def _put(self, req, resp, **kwargs):
         if req.content_type == 'application/json':
@@ -93,7 +93,7 @@ class Item(Collection):
             resp.status = falcon.HTTP_ACCEPTED
             resp.location = self.uri_template.format(**kwargs)
         else:
-            raise falcon.HTTPBadRequest(title='Unknown content type')
+            raise falcon.HTTPUnsupportedMediaType('Expected application/json')
 
     def _patch(self, req, resp, **kwargs):
         if req.content_type == 'application/json':
@@ -102,7 +102,7 @@ class Item(Collection):
             resp.status = falcon.HTTP_ACCEPTED
             resp.location = self.uri_template.format(**kwargs)
         else:
-            raise falcon.HTTPBadRequest(title='Unknown content type')
+            raise falcon.HTTPUnsupportedMediaType('Expected application/json')
 
     def _delete(self, req, resp, **kwargs):
         self._schema.delete(kwargs)
@@ -124,8 +124,7 @@ class FileCollection(ResourceURI):
 
     def on_post(self, req, resp):
         if self._content_types and req.content_type not in self._content_types:
-            raise falcon.HTTPBadRequest(
-                title='Bad content type',
+            raise falcon.HTTPUnsupportedMediaType(
                 description='Content type must be one of {}'.format(self._content_types))
 
         name = self._store.save(req.stream, req.content_type)
