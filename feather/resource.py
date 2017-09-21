@@ -167,7 +167,7 @@ class Item(FeatherResource):
         data = req.bounded_stream.read()
         validated, error_dict = self._schema.put(kwargs, data)
         self._error_handler(error_dict)
-        resp.status = falcon.HTTP_ACCEPTED
+        resp.status = falcon.HTTP_NO_CONTENT
         resp.location = self.uri_template.format(**kwargs)
 
     @falcon.before(validate_content_type)
@@ -184,7 +184,7 @@ class Item(FeatherResource):
         """Delete an object
         """
         self._schema.delete(kwargs)
-        resp.status = falcon.HTTP_ACCEPTED
+        resp.status = falcon.HTTP_NO_CONTENT
 
 
 class FileCollection(FeatherResource):

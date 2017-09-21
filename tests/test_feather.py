@@ -121,7 +121,7 @@ class TestUsers:
             body=json.dumps(FAKE_USER),
             headers={'content-type': 'application/json'}
         )
-        assert response.status == falcon.HTTP_ACCEPTED
+        assert response.status == falcon.HTTP_NO_CONTENT
 
 class TestFileResource:
 
