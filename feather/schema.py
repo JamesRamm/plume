@@ -3,10 +3,9 @@ save deserialized data to a collection
 
 The connections to mongodb are cached. Inspired by MongoEngine
 """
-import simplejson
 import pymongo
 from bson.objectid import ObjectId
-from marshmallow import Schema, fields, SchemaOpts, ValidationError
+from marshmallow import Schema, fields, SchemaOpts
 from feather.connection import get_database
 from feather import errors
 
