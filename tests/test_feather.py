@@ -61,6 +61,30 @@ class TestUsers:
 
         assert response.status == falcon.HTTP_CREATED
 
+    def test_post_duplicate(self, client):
+        doc = json.dumps(FAKE_USER)
+        response = client.simulate_post(
+            '/users',
+            body=doc,
+            headers={'content-type': 'application/json'}
+        )
+
+        response = client.simulate_post(
+            '/users',
+            body=doc,
+            headers={'content-type': 'application/json'}
+        )
+        assert response.status == falcon.HTTP_CONFLICT
+
+    def test_post_bad_data(self, client):
+        doc = json.dumps({'email': 'bad email'})
+        response = client.simulate_post(
+            '/users',
+            body=doc,
+            headers={'content-type': 'application/json'}
+        )
+        assert response.status == falcon.HTTP_BAD_REQUEST
+
     def test_post_bad_content_type(self, client):
         doc = json.dumps(FAKE_USER)
         response = client.simulate_post(

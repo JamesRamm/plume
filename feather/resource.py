@@ -4,6 +4,18 @@ import mimetypes
 import falcon
 import simplejson
 from feather.hooks import validate_content_type
+from feather import errors
+
+
+def basic_error_handler(error_dict):
+    """Handle an error dictionary returned by
+    a marshmallow schema
+    """
+    # Duplicate keys indicate a conflict since the object already exists
+    if errors.DUPLICATE_KEY in error_dict:
+        raise falcon.HTTPConflict('Duplicate Key', error_dict[errors.DUPLICATE_KEY])
+    elif error_dict:
+        raise falcon.HTTPBadRequest('Validation Error', error_dict)
 
 class FeatherResource(object):
     """Base class used for setting a uri_template, allowed content types
@@ -27,10 +39,12 @@ class FeatherResource(object):
             self,
             uri_template,
             content_types=('application/json',),
-            methods=('get', 'patch', 'put', 'delete', 'post')
+            methods=('get', 'patch', 'put', 'delete', 'post'),
+            error_handler=basic_error_handler
     ):
         self._uri = uri_template
         self._content_types = content_types
+        self._error_handler = error_handler
 
         # We dynamically set attributes for the expected
         # falcon HTTP method handlers.
@@ -114,7 +128,8 @@ class Collection(FeatherResource):
         content types.
         """
         data = req.bounded_stream.read()
-        complete_data, errors = self._schema.post(data)
+        complete_data, error_dict = self._schema.post(data)
+        self._error_handler(error_dict)
         resp.status = falcon.HTTP_CREATED
 
 class Item(FeatherResource):
@@ -150,7 +165,8 @@ class Item(FeatherResource):
         """Replace a schema object with the given data
         """
         data = req.bounded_stream.read()
-        self._schema.put(kwargs, data)
+        validated, error_dict = self._schema.put(kwargs, data)
+        self._error_handler(error_dict)
         resp.status = falcon.HTTP_ACCEPTED
         resp.location = self.uri_template.format(**kwargs)
 
@@ -159,7 +175,8 @@ class Item(FeatherResource):
         """Update an existing schema object with the given data
         """
         data = req.bounded_stream.read()
-        self._schema.patch(kwargs, data)
+        validated, error_dict = self._schema.patch(kwargs, data)
+        self._error_handler(error_dict)
         resp.status = falcon.HTTP_ACCEPTED
         resp.location = self.uri_template.format(**kwargs)
 

@@ -8,6 +8,7 @@ import pymongo
 from bson.objectid import ObjectId
 from marshmallow import Schema, fields, SchemaOpts, ValidationError
 from feather.connection import get_database
+from feather import errors
 
 def _check_object_id(filter_spec):
     """Replaces the object id string in a filter spec with a pymongo
@@ -101,7 +102,7 @@ class MongoSchema(Schema):
             else:
                 collection.insert_one(validated.data)
         except pymongo.errors.DuplicateKeyError as error:
-            validated.errors['duplicate_key'] = error.details
+            validated.errors[errors.DUPLICATE_KEY] = error.details
 
         return validated
 
@@ -115,7 +116,7 @@ class MongoSchema(Schema):
         try:
             collection.update_one(filter_spec, {"$set": validated.data})
         except pymongo.errors.DuplicateKeyError as error:
-            validated.errors['duplicate_key'] = error.details
+            validated.errors[errors.DUPLICATE_KEY] = error.details
 
         return validated
 
@@ -128,7 +129,7 @@ class MongoSchema(Schema):
         try:
             collection.replace_one(filter_spec, validated.data)
         except pymongo.errors.DuplicateKeyError as error:
-            validated.errors['duplicate_key'] = error.details
+            validated.errors[errors.DUPLICATE_KEY] = error.details
 
         return validated
 
