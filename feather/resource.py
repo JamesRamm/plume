@@ -12,6 +12,16 @@ class FeatherResource(object):
     By encapsulating the URI, we can provide factory methods
     for routing, allowing us to specify the resource and its' uri
     in one place
+
+    Methods are dynamically assigned in order to allow a single Resource class
+    to be created for different resources/with different requirements.
+    (E.g. create a read-only collection by only passing ``('get',)`` when
+    instantiating)
+
+    Allowed content types are passed for the same reason. A sub class could
+    check these using the ``validated_content_type`` hooks.
+    This is mostly useful for file uploads (see ``FileCollection`` or ``FileItem``)
+    where you might wish to restrict content types (e.g. images only)
     """
     def __init__(
             self,
@@ -86,9 +96,9 @@ class Collection(FeatherResource):
         super(Collection, self).__init__(uri_template, content_types, methods)
         self._schema = schema
 
-
-
     def _get(self, req, resp):
+        """Get a representation of all objects in the schema.
+        """
         # dump all schema objects
         cursor = self._schema.find()
         result = self._schema.dumps(cursor, many=True)
@@ -98,6 +108,11 @@ class Collection(FeatherResource):
 
     @falcon.before(validate_content_type)
     def _post(self, req, resp):
+        """Accepts data passes it to the schema for validation & creation.
+
+        If overriding, note this function uses a decorator to validate the
+        content types.
+        """
         data = req.bounded_stream.read()
         complete_data, errors = self._schema.post(data)
         resp.status = falcon.HTTP_CREATED
@@ -116,6 +131,11 @@ class Item(FeatherResource):
         self._schema = schema
 
     def _get(self, req, resp, **kwargs):
+        """Get a representation of a single object in the schema.
+
+        kwargs contains the lookup parameter specified in the uri template
+        (as given by falcon)
+        """
         document = self._schema.get(kwargs)
         if document:
             result = self._schema.dumps(document)
@@ -123,10 +143,12 @@ class Item(FeatherResource):
             resp.content_type = falcon.MEDIA_JSON
             resp.status = falcon.HTTP_OK
         else:
-            raise falcon.HTTPUnsupportedMediaType('Expected application/json')
+            raise falcon.HTTPNotFound('No matching document')
 
     @falcon.before(validate_content_type)
     def _put(self, req, resp, **kwargs):
+        """Replace a schema object with the given data
+        """
         data = req.bounded_stream.read()
         self._schema.put(kwargs, data)
         resp.status = falcon.HTTP_ACCEPTED
@@ -134,37 +156,51 @@ class Item(FeatherResource):
 
     @falcon.before(validate_content_type)
     def _patch(self, req, resp, **kwargs):
+        """Update an existing schema object with the given data
+        """
         data = req.bounded_stream.read()
         self._schema.patch(kwargs, data)
         resp.status = falcon.HTTP_ACCEPTED
         resp.location = self.uri_template.format(**kwargs)
 
     def _delete(self, req, resp, **kwargs):
+        """Delete an object
+        """
         self._schema.delete(kwargs)
         resp.status = falcon.HTTP_ACCEPTED
 
 
 class FileCollection(FeatherResource):
     """Collection for posting/listing file uploads.
+
+    By default, all content types are allowed - usually you would want to limit this, e.g. just
+    allow images by passing ``('image/png', 'image/jpeg')``
     """
     def __init__(self, store, uri_template='/files', content_types=None, methods=('get', 'post')):
         super(FileCollection, self).__init__(uri_template, content_types, methods)
         self._store = store
 
     def _get(self, req, resp):
+        """Get a list of all file URL's available
+        """
         uploads = self._store.list()
         resp.body = simplejson.dumps(uploads)
         resp.status = falcon.HTTP_200
 
     @falcon.before(validate_content_type)
     def _post(self, req, resp):
+        """POST a new file (stream)
+
+        If overriding, note this function uses a decorator to validate the
+        content types.
+        """
         name = self._store.save(req.stream, req.content_type)
         resp.status = falcon.HTTP_CREATED
         resp.location = "{}/{}".format(self._uri, name)
 
 
 class FileItem(FeatherResource):
-    """Item for downloading a single file
+    """Item resource for interacting with single files
     """
     def __init__(self, store, uri_template='/files/{name}', content_types=None, methods=('get',)):
         super(FileItem, self).__init__(uri_template, content_types, methods)
@@ -172,6 +208,8 @@ class FileItem(FeatherResource):
         self._uri_param = self._uri.split('{')[1].split('}')[0]
 
     def _get(self, req, resp, **kwargs):
+        """Download a single file
+        """
         name = kwargs[self._uri_param]
         resp.content_type = mimetypes.guess_type(name)[0]
         resp.stream, resp.stream_len = self._store.open(name)
