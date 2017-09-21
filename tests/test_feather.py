@@ -61,6 +61,24 @@ class TestUsers:
 
         assert response.status == falcon.HTTP_CREATED
 
+    def test_post_bad_content_type(self, client):
+        doc = json.dumps(FAKE_USER)
+        response = client.simulate_post(
+            '/users',
+            body=doc,
+            headers={'content-type': 'absolute rubbish'}
+        )
+        assert response.status == falcon.HTTP_415
+
+    def test_patch_bad_content_type(self, client):
+        doc = self._make_user()
+        response = client.simulate_patch(
+            '/users/{}'.format(doc['email']),
+            body="",
+            headers={'content-type': 'absolute rubbish'}
+        )
+        assert response.status == falcon.HTTP_415
+
     def test_patch_user(self, client):
         doc = self._make_user()
         data = json.dumps({'name': 'Different Name'})
