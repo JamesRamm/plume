@@ -158,7 +158,7 @@ class Item(FeatherResource):
             resp.content_type = falcon.MEDIA_JSON
             resp.status = falcon.HTTP_OK
         else:
-            raise falcon.HTTPNotFound('No matching document')
+            raise falcon.HTTPNotFound()
 
     @falcon.before(validate_content_type)
     def _put(self, req, resp, **kwargs):
