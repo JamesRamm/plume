@@ -1,4 +1,4 @@
-from marshmallow import fields
+from marshmallow import fields, ValidationError
 from bson.objectid import ObjectId
 
 
@@ -23,3 +23,21 @@ class MongoId(fields.Field):
 
     def _deserialize(self, value, attr, obj):
         return ObjectId(value)
+
+class Choice(fields.Field):
+    def __init__(self, choices=None, *args, **kwargs):
+        self._choices = choices
+        super(Choice, self).__init__(*args, **kwargs)
+
+    def _serialize(self, value, attr, obj):
+        if value not in self._choices:
+            raise ValidationError('Value must be one of {}'.format(self._choices))
+        return {
+            'value': value,
+            'choices': self._choices
+        }
+
+    def _deserialize(self, value, attr, obj):
+        if value not in self._choices:
+            raise ValidationError('Value must be one of {}'.format(self._choices))
+        return value
