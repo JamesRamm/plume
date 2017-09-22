@@ -8,6 +8,7 @@ from bson.objectid import ObjectId
 from marshmallow import Schema, fields, SchemaOpts
 from feather.connection import get_database
 from feather import errors
+from feather.fields import MongoId
 
 def _check_object_id(filter_spec):
     """Replaces the object id string in a filter spec with a pymongo
@@ -36,7 +37,7 @@ class MongoSchema(Schema):
     """
     OPTIONS_CLASS = MonogSchemaOpts
 
-    _id = fields.Str(dump_only=True)
+    _id = MongoId(dump_only=True)
 
     def __init__(self, *args, **kwargs):
         super(MongoSchema, self).__init__(*args, **kwargs)

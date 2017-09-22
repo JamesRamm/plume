@@ -46,7 +46,7 @@ The following example creates a basic JSON API for a representation of a user.
 
     from datetime import datetime
     from feather import create_app, schema, Collection, Item
-    from feather import connect
+    from feather.connection import connect
     from marshmallow import fields, Schema
 
     class UserSchema(schema.MongoSchema):
