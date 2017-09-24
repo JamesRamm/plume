@@ -15,18 +15,15 @@ requirements = [
     'marshmallow==2.13.6',
     'pymongo==3.5.1',
     'falcon==1.3.0',
-    'gunicorn==19.7.1',
     'simplejson==3.11.1'
 ]
 
 setup_requirements = [
     'pytest-runner',
-    # TODO(JamesRamm): put setup requirements (distutils extensions, etc.) here
 ]
 
 test_requirements = [
     'pytest',
-    # TODO: put package test requirements here
 ]
 
 setup(

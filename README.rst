@@ -35,6 +35,7 @@ Features
 - ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
     to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
 
+- Useful extra fields for marshmallow (``Choice``, ``Slug``, ``MongoId``, ``Password``...)
 
 
 Example
@@ -47,36 +48,10 @@ The following example creates a basic JSON API for a representation of a user.
     from datetime import datetime
     from feather import create_app, schema, Collection, Item
     from feather.connection import connect
+    from feather.fields import Slug, Choice
     from marshmallow import fields, Schema
 
     class UserSchema(schema.MongoSchema):
-        """Example user schema for testing.
-
-        The ``MongoSchema`` base class provides methods to
-        save the validated data to the mongodb backend.
-        The regular ``Schema`` from marshmallow is untouched - you
-        can use ``loads`` and ``dumps`` without any interaction with the db.
-        Instead ``MongoSchema`` introduces the following methods:
-
-        ``post``: Create a new document
-        ``patch``: Update a document
-        ``put``: Replace a document
-        ``get``: Retrieve a single document
-        ``find``: Filter the documents
-
-        These methods use ``pymongo`` directly for speed and provide a simple, yet powerful
-        way of providing an ORM *and* serializer in one class.
-        You can pass the result of ``get`` and ``find`` directly to ``dumps``:
-
-                document = schema.get({'email': 'bob@testerson.com'})
-                schema.dumps(document)
-
-                # Get all documents
-                schema.dumps(schema.find(), many=True)
-
-        By utilizing marshmallow, you don't need to learn yet another library/ORM - simply
-        declare fields as you would with marshmallow.
-        """
         name = fields.Str(required=True)
         email = fields.Email(required=True)
         created = fields.DateTime(
@@ -84,11 +59,7 @@ The following example creates a basic JSON API for a representation of a user.
                 default=lambda: datetime.utcnow().isoformat()
         )
         profile = fields.Nested("ProfileSchema")
-        slug = fields.Method("make_slug")
-
-        def make_slug(self, obj):
-            return obj['name'].lower().replace(" ", "_")
-
+        slug = fields.Slug(populate_from='name')
 
     class ProfileSchema(Schema):
         """Example of nesting a schema.
@@ -98,26 +69,39 @@ The following example creates a basic JSON API for a representation of a user.
         profile_image = fields.Url(load_from='profileImage', dump_to='profileImage')
 
 
+    def get_app(database_name='myapp')
+        """Creates the falcon app.
+        We pass the database name so we can use a different db for testing
+        """
+        # Connect to the database *before* making schema instance.
+        # The ``connect`` function takes the same arguments as pymongo's
+        # ``MongoClient``. Here we connect to localhost.
+        connect(database_name)
+        user = UserSchema()
+        resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
+        return create_app(resources)
 
-    # Connect to the database *before* making schema instance.
-    # The ``connect`` function takes the same arguments as pymongo's
-    # ``MongoClient``. Here we connect to localhost.
-    connect()
-    user = UserSchema()
+Name this file ``app.py`` and run it with gunicorn:
 
-    # ``Collection`` and ``Item`` are falcon Resource classes which provide the HTTP method handlers.
-    # They are designed to work with the schema passed into them on creation - a basic CRUD JSON API
-    # can be created with no extra configuration.
-    # You pass the URI template (that would normally be passed to ``api.add_route`` in falcon) directly
-    # to the resource class. This keeps your code DRY and minimal.
-    # With a ``Collection`` resource we can post and retrieve a list of all user documents.
-    # An ``Item`` resource allows retrieving a single item (in this case the user), updating and
-    # deleting.
-    # The ``create_app`` function registers your routes & resources with falcon and returns the ``API``
-    # instance.
-    resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
-    api = create_app(resources)
+        gunicorn 'app:get_app()'
 
+Philosophy
+----------
+
+Feather intends to be a light and transparent library. It should compliment and enhance
+Falcon & MongoDB usage but not get in the way of custom development.
+To this end I have a small number of rules:
+
+- No 'magic'. That means no overriding operators, writing endless metaclasses or hiding away aspects of Falcon.
+  If a user wants to break out and do something different, they shouldn't have to spend ages grokking feather code
+  in order to figure out where they can reach into Falcon (or marshmallow or pymongo for that matter).
+
+- Avoid mixins. Mixins introduce implicit dependencies and make it harder to reason about code. There are frameworks out
+  there which use mixins liberally (both for falcon and not for falcon). I decided to go a different way.
+
+- No 'batteries' included. Feather is a *library* not a framework. We strive to provide useful functions and classes for common use
+  cases, not *all* use cases. It should be possible to use them or not. If you use something, you should not be obliged to have 100 other
+  things. (e.g., creating a schema based on ``MongoSchema`` does not oblige you to use feathers' ``Collection`` and/or ``Item`` resource classes).
 
 
 

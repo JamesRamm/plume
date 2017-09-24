@@ -7,9 +7,22 @@ class Slug(fields.Field):
     the input value to a lowercase string
     without spaces.
     """
+    def __init__(self, populate_from=None, *args, **kwargs):
+        self._from = populate_from
+        super(Slug, self).__init__(*args, **kwargs)
+
     def _serialize(self, value, attr, obj):
         if value:
-            return str(value).lower().replace(' ', '-')
+            pass
+        elif self._from:
+            value = obj[self._from]
+        else:
+            value = ''
+
+        return str(value).lower().replace(' ', '-')
+
+    def _deserialize(self, value, attr, data):
+        return str(value).lower().replace(' ', '-')
 
 class MongoId(fields.Field):
     """Represents a MongoDB object id
