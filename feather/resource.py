@@ -9,7 +9,11 @@ from feather import errors
 
 def basic_error_handler(error_dict):
     """Handle an error dictionary returned by
-    a marshmallow schema
+    a marshmallow schema.
+
+    This basic handler either returns a 409 conflict error if
+    the error dictionary indicates a duplicate key, or a 400
+    bad request error with the error dictionary attached.
     """
     # Duplicate keys indicate a conflict since the object already exists
     print(error_dict)
@@ -27,20 +31,39 @@ class FeatherResource(object):
     for routing, allowing us to specify the resource and its' uri
     in one place
 
-    Methods are dynamically assigned in order to allow a single Resource class
-    to be created for different resources/with different requirements.
+    HTTP handler methods (``on_<method>`` in falcon) are dynamically assigned
+    in order to allow Resource instances to be created for with different sets
+    of requiremets.
     (E.g. create a read-only collection by only passing ``('get',)`` when
-    instantiating)
+    instantiating). This explains why the method handlers below are not named
+    ``on_<method>`` but simple ``_<method>``.
 
     Allowed content types are passed for the same reason. A sub class could
     check these using the ``validated_content_type`` hooks.
     This is mostly useful for file uploads (see ``FileCollection`` or ``FileItem``)
     where you might wish to restrict content types (e.g. images only)
+
+    Args:
+
+        uri_template (str): A URI template for this resource which will be used
+            when routing (using the ``feather.create_app`` factory function) and
+            for setting ``Location`` headers.
+
+        content_types (tuple, set or list): List of allowed content_types. This is not
+            used by default. Instead, decorate desired handler methods with
+            @falcon.before(validate_content_type).
+            A ``set`` is reccomended as the validation performs an exclusion (``not in``) operation
+
+        methods (tuple or list): List of HTTP methods to allow.
+
+        error_handler (callable): A function which is responsible for handling validation
+            errors returned by a marshmallow schema.
+            Defaults to ``feather.resource.basic_error_handler``
     """
     def __init__(
             self,
             uri_template,
-            content_types=('application/json',),
+            content_types={'application/json',},
             methods=('get', 'patch', 'put', 'delete', 'post'),
             error_handler=basic_error_handler
     ):
@@ -54,13 +77,13 @@ class FeatherResource(object):
         # of methods to use. E.g. if they dont want to support
         # 'on_post', this would be left off the method list
         for method in methods:
-            method_name = 'on_{}'.format(method)
-            handler = getattr(self, '_{}'.format(method))
+            method_name = 'on_{}'.format(method.lower())
+            handler = getattr(self, '_{}'.format(method.lower()))
             setattr(self, method_name, handler)
 
     @property
     def uri_template(self):
-        """The URI for this resource
+        """The URI template for this resource
         """
         return self._uri
 
@@ -69,20 +92,57 @@ class FeatherResource(object):
         return self._content_types
 
     def _post(self, req, resp):
-        pass
+        """POST request handler.
+
+        Override in child classes to provide
+        POST handling
+
+        Args:
+
+            req (falcon.Request): The falcon Request object
+            resp (falcon.Response): The falcon Response object
+        """
+        raise falcon.HTTP_METHOD_NOT_ALLOWED
 
     def _get(self, req, resp):
-        pass
+        """GET request handler
+
+        Args:
+
+            req (falcon.Request): The falcon Request object
+            resp (falcon.Response): The falcon Response object
+        """
+        raise falcon.HTTP_METHOD_NOT_ALLOWED
 
     def _put(self, req, resp):
-        pass
+        """PUT request handler
+
+        Args:
+
+            req (falcon.Request): The falcon Request object
+            resp (falcon.Response): The falcon Response object
+        """
+        raise falcon.HTTP_METHOD_NOT_ALLOWED
 
     def _patch(self, req, resp):
-        pass
+        """PATCH request handler
+
+        Args:
+
+            req (falcon.Request): The falcon Request object
+            resp (falcon.Response): The falcon Response object
+        """
+        raise falcon.HTTP_METHOD_NOT_ALLOWED
 
     def _delete(self, req, resp):
-        pass
+        """DELETE request handler
 
+        Args:
+
+            req (falcon.Request): The falcon Request object
+            resp (falcon.Response): The falcon Response object
+        """
+        raise falcon.HTTP_METHOD_NOT_ALLOWED
 
 
 class Collection(FeatherResource):
@@ -101,6 +161,23 @@ class Collection(FeatherResource):
 
         class MyResource(Collection):
             on_post = falcon.before(my_function)(Collection.on_post.__func__)
+
+
+    Also note that when overriding, you will need to manually add back the content
+    type validation for the ``_post`` method if appropriate.
+
+    Args:
+
+        schema (feather.schema.MongoSchema): An instance of a ``MongoSchema`` child class on which the
+            ``Collection`` instance should operate.
+
+        uri_template (str): See ``feather.resource.FeatherResource``
+        content_types (tuple or list): See ``feather.resource.FeatherResource``.
+             Defaults to ``'application/json'``
+        methods (str): See ``feather.resource.FeatherResource``.
+            Defaults to ``('get', 'post')``
+        error_handler (callable): See ``feather.resource.FeatherResource``.
+
     """
     def __init__(
             self,
@@ -147,6 +224,17 @@ class Collection(FeatherResource):
 
 class Item(FeatherResource):
     """Generic class for getting/editing a single data item via a schema
+
+    Args:
+
+        schema (feather.schema.MongoSchema): An instance of a ``MongoSchema`` child class
+            on which the ``Item`` instance should operate.
+        uri_template (str): See ``feather.resource.FeatherResource``
+        content_types (tuple or list): See ``feather.resource.FeatherResource``.
+             Defaults to ``'application/json'``
+        methods (str): See ``feather.resource.FeatherResource``.
+            Defaults to ``('get', 'put', 'patch', 'delete')``
+        error_handler (callable): See ``feather.resource.FeatherResource``.
     """
     def __init__(
             self,

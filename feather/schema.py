@@ -19,7 +19,7 @@ def _check_object_id(filter_spec):
 
 
 class MonogSchemaOpts(SchemaOpts):
-    """Adds 'constraints' option
+    """Adds 'constraints' option to the standard Marshmallow options
     """
     def __init__(self, meta, **kwargs):
         SchemaOpts.__init__(self, meta, **kwargs)
@@ -34,9 +34,18 @@ class MongoSchema(Schema):
     Django table names)
 
     This enables marshmallow to behave as an ORM to MongoDB
+
+    ``MongoSchema`` does not override any marshmallow methods. Instead it provides
+    new methods which are recognised by feathers 'Resource' classes.
+    Therefore, the database will not be affected if you call ``dump``/``dumps``
+     or ``load``/``loads``
+
+    Note: Currently we attempt to create the database constraints when the schema
+    is initialized. Therefore, you must connect to a database first.
     """
     OPTIONS_CLASS = MonogSchemaOpts
 
+    # _id field provided by default. It will be autocreated when a document is posted.
     _id = MongoId(dump_only=True)
 
     def __init__(self, *args, **kwargs):
@@ -49,8 +58,8 @@ class MongoSchema(Schema):
         self._create_constraints(self.get_collection())
 
     def _db_name(self):
-        """Generate a name for the backend representation of this schema.
-        I.e the name for the mongodb collection, sql table or disk file
+        """Generate a name for the collection which will be created
+        to represent this schema.
         """
         if not self._name:
             class_name = self.__class__.__name__
@@ -62,11 +71,20 @@ class MongoSchema(Schema):
         return self._name
 
     def _create_constraints(self, collection):
+        """Create the constraints specified by the ``constraints`` option.
+
+        They should be formatted so that they can be passed directly to
+        ``create_index``.
+
+        Args:
+
+            collection: A pymongo ``Collection`` representing this schema
+        """
         for key, kwargs in self.opts.constraints:
             collection.create_index(key, **kwargs)
 
     def get_collection(self):
-        """Return the collection associated with this schema
+        """Return the pymongo collection associated with this schema.
         """
         # We get the connected mongo database and generate a collection
         # name based on the name of this schema. Mongodb will create the
@@ -77,7 +95,19 @@ class MongoSchema(Schema):
 
     def get_filter(self, req):
         """Create a MongoDB filter query
-        for this schema based on an incoming request
+        for this schema based on an incoming request.
+        It is intended that this method be overridden in child classes
+        to provide per-request filtering on ``GET`` requests.
+
+        Args:
+            req (falcon.Request) The falcon ``Request`` object currently being
+                processed
+
+        Returns:
+
+            dict: A dictionary containing keyword arguments which
+                can be passed directly to pymongos' ``find`` method.
+                defaults to an empty dictionary (no filters applied)
         """
         return {}
 
@@ -95,7 +125,18 @@ class MongoSchema(Schema):
         return collection.find_one(filter_spec, *args, **kwargs)
 
     def post(self, data):
-        """Shortcut for 'loads' that follows HTTP naming conventions
+        """Creates a new document in the mongodb database.
+
+        Uses marshmallows' ``loads`` method to validate and complete incoming
+        data, before saving it to the database.
+
+        Args:
+            data (str): JSON data to be validated against the schema
+
+        Returns:
+
+            validated: Tuple of (data, errors) containing the validated
+                & deserialized data dict and any errors.
         """
         validated = self.loads(data)
         # Retrieve the collection in which this document should be inserted
@@ -115,6 +156,12 @@ class MongoSchema(Schema):
 
     def patch(self, filter_spec, data):
         """'Patch' (update) an existing document
+
+        Args:
+            filter_spec (dict): The pymongo filter spec to match a single document
+                to be updated
+
+            data: JSON data to be validated, deserialized and used to update a document
         """
         validated = self.loads(data, partial=True)
         collection = self.get_collection()
@@ -128,6 +175,8 @@ class MongoSchema(Schema):
 
     def put(self, filter_spec, data):
         """'Put' (replace) an existing document
+
+        See documentation for ``MongoSchema.patch``
         """
         validated = self.loads(data)
         collection = self.get_collection()
@@ -147,7 +196,9 @@ class MongoSchema(Schema):
         collection.delete_one(filter_spec)
 
     def count(self):
-        """Wraps pymongo's `count` for this collection
+        """Wraps pymongo's `count` for this collection.
+
+        Returns the count of all documents in the collection
         """
         collection = self.get_collection()
         return collection.count()
