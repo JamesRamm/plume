@@ -19,7 +19,7 @@ def client():
     disconnect()
 
 
-FAKE_USER  = {
+FAKE_USER = {
     'name': 'Bob Testerson',
     'email': 'bob@bob.com',
     'profile': {

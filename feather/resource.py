@@ -12,10 +12,12 @@ def basic_error_handler(error_dict):
     a marshmallow schema
     """
     # Duplicate keys indicate a conflict since the object already exists
+    print(error_dict)
     if errors.DUPLICATE_KEY in error_dict:
         raise falcon.HTTPConflict('Duplicate Key', error_dict[errors.DUPLICATE_KEY])
     elif error_dict:
         raise falcon.HTTPBadRequest('Validation Error', error_dict)
+
 
 class FeatherResource(object):
     """Base class used for setting a uri_template, allowed content types
@@ -105,16 +107,27 @@ class Collection(FeatherResource):
             schema,
             uri_template,
             content_types=('application/json'),
-            methods=('get', 'post')
+            methods=('get', 'post'),
+            error_handler=basic_error_handler
     ):
-        super(Collection, self).__init__(uri_template, content_types, methods)
+        super(Collection, self).__init__(
+            uri_template,
+            content_types,
+            methods,
+            error_handler
+        )
         self._schema = schema
 
     def _get(self, req, resp):
-        """Get a representation of all objects in the schema.
+        """List all schmea objects in the database.
+
+        This method will call ``get_filter`` on the ``MongoSchema`` instance that
+        was passed in. The result of ``get_filter`` are then passed to the
+        ``find`` method of ``MongoSchema`` in order to retrieve the final
+        list of objects to return.
         """
         # dump all schema objects
-        cursor = self._schema.find()
+        cursor = self._schema.find(**self._schema.get_filter(req))
         result = self._schema.dumps(cursor, many=True)
         resp.body = result.data
         resp.content_type = falcon.MEDIA_JSON
@@ -149,9 +162,16 @@ class Item(FeatherResource):
         """Get a representation of a single object in the schema.
 
         kwargs contains the lookup parameter specified in the uri template
-        (as given by falcon)
+        (as given by falcon). This will be used to update the result of
+        ``get_filter``
         """
-        document = self._schema.get(kwargs)
+        filter_spec = self._schema.get_filter(req)
+        try:
+            kwargs.update(filter_spec['filter'])
+            del filter_spec['filter']
+        except KeyError:
+            pass
+        document = self._schema.get(kwargs, **filter_spec)
         if document:
             result = self._schema.dumps(document)
             resp.body = result.data

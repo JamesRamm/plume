@@ -75,6 +75,12 @@ class MongoSchema(Schema):
         collection = get_database()[name]
         return collection
 
+    def get_filter(self, req):
+        """Create a MongoDB filter query
+        for this schema based on an incoming request
+        """
+        return {}
+
     def find(self, *args, **kwargs):
         """Wraps pymongo's `find` for this collection
         """
