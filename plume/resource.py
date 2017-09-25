@@ -63,7 +63,7 @@ class PlumeResource(object):
     def __init__(
             self,
             uri_template,
-            content_types('application/json',),
+            content_types=('application/json',),
             methods=('get', 'patch', 'put', 'delete', 'post'),
             error_handler=basic_error_handler
     ):
@@ -218,7 +218,7 @@ class Collection(PlumeResource):
         content types.
         """
         data = req.bounded_stream.read()
-        complete_data, error_dict = self._schema.post(data)
+        _, error_dict = self._schema.post(data)
         self._error_handler(error_dict)
         resp.status = falcon.HTTP_CREATED
 
@@ -273,7 +273,7 @@ class Item(PlumeResource):
         """Replace a schema object with the given data
         """
         data = req.bounded_stream.read()
-        validated, error_dict = self._schema.put(kwargs, data)
+        _, error_dict = self._schema.put(kwargs, data)
         self._error_handler(error_dict)
         resp.status = falcon.HTTP_NO_CONTENT
         resp.location = self.uri_template.format(**kwargs)
@@ -283,7 +283,7 @@ class Item(PlumeResource):
         """Update an existing schema object with the given data
         """
         data = req.bounded_stream.read()
-        validated, error_dict = self._schema.patch(kwargs, data)
+        _, error_dict = self._schema.patch(kwargs, data)
         self._error_handler(error_dict)
         resp.status = falcon.HTTP_ACCEPTED
         resp.location = self.uri_template.format(**kwargs)

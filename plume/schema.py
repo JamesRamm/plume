@@ -5,7 +5,7 @@ The connections to mongodb are cached. Inspired by MongoEngine
 """
 import pymongo
 from bson.objectid import ObjectId
-from marshmallow import Schema, fields, SchemaOpts
+from marshmallow import Schema, SchemaOpts
 from plume.connection import get_database
 from plume import errors
 from plume.fields import MongoId

@@ -36,10 +36,10 @@ class MongoId(fields.Field):
     deserializes to an ObjectID
     """
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, *args):
         return str(value)
 
-    def _deserialize(self, value, attr, obj):
+    def _deserialize(self, value, *args):
         return ObjectId(value)
 
 class Choice(fields.Field):
@@ -53,7 +53,7 @@ class Choice(fields.Field):
         self._choices = choices
         super(Choice, self).__init__(*args, **kwargs)
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, *args):
         if value not in self._choices:
             raise ValidationError('Value must be one of {}'.format(self._choices))
         return {
@@ -61,7 +61,7 @@ class Choice(fields.Field):
             'choices': list(self._choices)
         }
 
-    def _deserialize(self, value, attr, obj):
+    def _deserialize(self, value, *args):
         if value not in self._choices:
             raise ValidationError('Value must be one of {}'.format(self._choices))
         return value
