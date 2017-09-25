@@ -63,7 +63,7 @@ class PlumeResource(object):
     def __init__(
             self,
             uri_template,
-            content_types={'application/json',},
+            content_types('application/json',),
             methods=('get', 'patch', 'put', 'delete', 'post'),
             error_handler=basic_error_handler
     ):
