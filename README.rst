@@ -34,8 +34,8 @@ Features
 
 - Easy filtering/projection of documents per request
 
-- ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
-    to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
+- The ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
+  to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
 
 - Useful extra fields for marshmallow (``Choice``, ``Slug``, ``MongoId``, ``Password``...)
 
