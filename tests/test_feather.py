@@ -8,7 +8,7 @@ from falcon import testing
 from feather.connection import connect, disconnect, get_database
 from feather import FileCollection, FileItem, FileStore
 from feather.storage import unique_id
-from .app import create, UserSchema
+from .app import create, UserSchema, FilterSchema
 
 @pytest.fixture
 def client():
@@ -122,6 +122,68 @@ class TestUsers:
             headers={'content-type': 'application/json'}
         )
         assert response.status == falcon.HTTP_NO_CONTENT
+
+class TestFiltering:
+
+    def _load_data(self):
+        data, errors = FilterSchema().post(json.dumps(
+            {
+                'value': 'value',
+                'value1': 'value1',
+                'value2': 'value2'
+            }
+        ))
+        return data
+
+    def test_roundtrip_list(self, client):
+        doc = self._load_data()
+        response = client.simulate_get('/filters')
+        result_doc = json.loads(response.content.decode('utf-8'))
+        assert 'value2' not in result_doc
+        assert response.status == falcon.HTTP_OK
+
+    def test_searching(self, client):
+        schema = FilterSchema()
+        schema.post(
+            json.dumps({
+                'value': 'schema1_value',
+                'value1': 'schema1_value1',
+                'value2': 'schema1_value2'
+            }))
+
+        schema.post(
+            json.dumps({
+                'value': 'schema2_value',
+                'value1': 'schema2_value1',
+                'value2': 'schema2_value2'
+            }))
+
+        # Pass the args as they would appear from ``get_filter``
+        result = schema.find(**{'filter': {'value1': 'schema2_value1'}})
+        assert result.count() == 1
+        assert result[0]['value1'] == 'schema2_value1'
+
+    def test_advanced_query(self, client):
+        """Test a mongodb query operator
+        """
+        schema = FilterSchema()
+        # Purposefully omitting some fields
+        schema.post(
+            json.dumps({
+                'value': 'schema1_value',
+                'value2': 'schema1_value2'
+            }))
+
+        schema.post(
+            json.dumps({
+                'value': 'schema2_value',
+                'value1': 'schema2_value1',
+            }))
+
+        result = schema.find(**{"filter": {"value1": {"$exists": True}}})
+        assert result.count() == 1
+        assert result[0]['value1'] == 'schema2_value1'
+
 
 class TestFileResource:
 

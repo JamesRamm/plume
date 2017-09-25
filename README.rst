@@ -22,7 +22,7 @@ feather
      :alt: Updates
 
 
-Easy webapps with falcon & mongodb
+A library to help you make Falcon web apps backed by MongoDB.
 
 Features
 ---------------
@@ -31,6 +31,8 @@ Features
   definition which also provides serialization and validation
 
 - Standard ``Resource`` classes for creating a full CRUD JSON API for REST collections and items.
+
+- Easy filtering/projection of documents per request
 
 - ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
     to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
@@ -43,12 +45,12 @@ Example
 
 The following example creates a basic JSON API for a representation of a user.
 
-.. code-block:: python
+..  code-block:: python
 
     from datetime import datetime
     from feather import create_app, schema, Collection, Item
     from feather.connection import connect
-    from feather.fields import Slug, Choice
+    from feather.fields import Slug
     from marshmallow import fields, Schema
 
     class UserSchema(schema.MongoSchema):
@@ -59,7 +61,7 @@ The following example creates a basic JSON API for a representation of a user.
                 default=lambda: datetime.utcnow().isoformat()
         )
         profile = fields.Nested("ProfileSchema")
-        slug = fields.Slug(populate_from='name')
+        slug = Slug(populate_from='name')
 
     class ProfileSchema(Schema):
         """Example of nesting a schema.
@@ -85,23 +87,26 @@ Name this file ``app.py`` and run it with gunicorn:
 
         gunicorn 'app:get_app()'
 
-Philosophy
+Design
 ----------
 
 Feather intends to be a light and transparent library. It should compliment and enhance
 Falcon & MongoDB usage but not get in the way of custom development.
 To this end I have a small number of rules:
 
-- No 'magic'. That means no overriding operators, writing endless metaclasses or hiding away aspects of Falcon.
-  If a user wants to break out and do something different, they shouldn't have to spend ages grokking feather code
-  in order to figure out where they can reach into Falcon (or marshmallow or pymongo for that matter).
+- No magic. Like falcon itself, it should be easy to follow inputs to outputs. To this end we have
+  a few soft rules such as:
+        - Avoid mixins. Mixins introduce implicit dependencies and make it harder to reason about code.
+        - Don't mess with metaclasses and double underscore methods without good reason.
+          There is often an easier, clearer way to achieve the same result.
 
-- Avoid mixins. Mixins introduce implicit dependencies and make it harder to reason about code. There are frameworks out
-  there which use mixins liberally (both for falcon and not for falcon). I decided to go a different way.
+- No reinvention. We try to use well proven existing solutions before rolling our own. Hence the use
+  of ``marshmallow`` for the ORM/serialization framework.
 
-- No 'batteries' included. Feather is a *library* not a framework. We strive to provide useful functions and classes for common use
-  cases, not *all* use cases. It should be possible to use them or not. If you use something, you should not be obliged to have 100 other
-  things. (e.g., creating a schema based on ``MongoSchema`` does not oblige you to use feathers' ``Collection`` and/or ``Item`` resource classes).
+- No hijacking. Feather is complimentary or an 'add-on' to Falcon. It does not replace direct usage of Falcon (what
+  you might expect from a framework). It solves some common use cases and provides some useful tools. When you want to
+  do something unsupported and go direct to falcon, it doesnt get in your way.
+
 
 
 

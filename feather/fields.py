@@ -22,6 +22,11 @@ class Slug(fields.Field):
         return str(value).lower().replace(' ', '-')
 
     def _deserialize(self, value, attr, data):
+        if value:
+            pass
+        elif self._from:
+            value = data[self._from]
+
         return str(value).lower().replace(' ', '-')
 
 class MongoId(fields.Field):
@@ -38,6 +43,12 @@ class MongoId(fields.Field):
         return ObjectId(value)
 
 class Choice(fields.Field):
+    """The input value is validated against a set of choices
+    passed in the field definition.
+    Upon serialization, the full choice list along with the
+    chosen value is returned (in a dict).
+    Only the chosen value should be passed in deserialization.
+    """
     def __init__(self, choices=None, *args, **kwargs):
         self._choices = choices
         super(Choice, self).__init__(*args, **kwargs)
@@ -47,7 +58,7 @@ class Choice(fields.Field):
             raise ValidationError('Value must be one of {}'.format(self._choices))
         return {
             'value': value,
-            'choices': self._choices
+            'choices': list(self._choices)
         }
 
     def _deserialize(self, value, attr, obj):

@@ -40,9 +40,28 @@ class ProfileSchema(Schema):
     profile_image = fields.Url(load_from='profileImage', dump_to='profileImage')
 
 
+class FilterSchema(MongoSchema):
+    class Meta:
+        json_module = simplejson
+
+    value = fields.Str()
+    value1 = fields.Str()
+    value2 = fields.Str()
+
+    def get_filter(self, req):
+        """Only returns
+        """
+        return {'projection': ('value', 'value1')}
+
+
 def create():
     """Create the falcon app
     """
     user = UserSchema()
-    resources = (Collection(user, '/users'), Item(user, '/users/{email}'))
+    filters = FilterSchema()
+    resources = (
+        Collection(user, '/users'), Item(user, '/users/{email}'),
+        Collection(filters, '/filters'), Item(filters, '/filters/{value}'),
+    )
+
     return create_app(resources)
