@@ -1,5 +1,5 @@
-Welcome to feather's documentation!
-======================================
+Feather
+=======
 
 Feather is a library to help you create Falcon API's backed by MongoDB.
 
@@ -15,10 +15,8 @@ Contents:
 
    readme
    installation
-   schemas
-   resources
-   recipes
-   modules
+   user_guide/index
+   api
    contributing
    authors
    history

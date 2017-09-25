@@ -9,7 +9,7 @@ Wrapping serialized results
 By default, the output from serialization is simply a JSON object (if serializing a single model) or
 array (for many models). e.g.:
 
-.. code-block:: json
+..  code-block:: javascript
 
     [
         {
@@ -25,7 +25,7 @@ array (for many models). e.g.:
 
 However, we may wish to return a 'wrapped' response, e.g:
 
-.. code-block:: json
+..  code-block:: javascript
 
     {
         'meta': {},
@@ -45,14 +45,16 @@ However, we may wish to return a 'wrapped' response, e.g:
 
 We can use marshmallows' ``post_dump`` decorator to achieve this in our schema:
 
-class Person(MongoSchema):
+..  code-block:: python
 
-    name = field.Str()
-    email = field.Str()
+    class Person(MongoSchema):
 
-    @post_dump(pass_many=True)
-    def wrap_with_envelope(self, data, many):
-        return {data: data, meta: {...}, errors: [...]}
+        name = field.Str()
+        email = field.Str()
+
+        @post_dump(pass_many=True)
+        def wrap_with_envelope(self, data, many):
+            return {data: data, meta: {...}, errors: [...]}
 
 Filtering output per user
 --------------------------
@@ -77,7 +79,7 @@ object and returns a dictionary of keyword arguments compatible with pymongos' `
 
 In order to customise ``get_filter`` for each user, the ``Request`` object needs to have some useful information
 attached. This is where we would make use of Falcons' middleware in order to attach information
-about the user. For example, you could use `falcon-auth<https://github.com/loanzen/falcon-auth>`_
+about the user. For example, you could use falcon-auth_
 to add the user to your request.
 A 'loader' function for ``falcon-auth`` (see the falcon-auth readme) might look something like:
 
@@ -115,3 +117,6 @@ We can now access ``req.context['user']`` in our ``get_filter``:
             return {
                 'filter': {'owner': user['username']},
             }
+
+
+.. _falcon-auth: https://github.com/loanzen/falcon-auth

@@ -17,7 +17,7 @@ An ``Item``
 
 Using the ``Person`` schema we created in the previous chapter, we can declare our resources:
 
-.. code-block:: python
+..  code-block:: python
 
     from feather import Collection, Item
 
@@ -29,6 +29,9 @@ Using the ``Person`` schema we created in the previous chapter, we can declare o
     )
 
 With the resources ready, you can use a factory function to create a Falcon app:
+
+
+..  code-block:: python
 
     from feather import create_app
 
@@ -45,8 +48,7 @@ Feather also provides basic ``FileCollection`` and ``FileItem`` resource classes
 for serving and accepting file data.
 As with ``Collection`` and ``Item`` resources, you can configure the uri template, allowed content types and
 HTTP methods.
-You also expected to pass a storage class to the resource. This is essentially the same as in the Falcon tutorial
-(https://falcon.readthedocs.io/en/stable/user/tutorial.html#serving-images).
+You also expected to pass a storage class to the resource. This is essentially the same as in the Falcon tutorial_.
 
 The storage class should provide ``save``, ``open`` and ``list`` methods.
 ``save`` and ``open`` are fairly clear and are as explained in the falcon tutorial.
@@ -57,8 +59,9 @@ Feather provides a basic file store - ``feather.FileStore`` which can be used.
 All this makes it easy to add file handling. Expanding the resources example:
 
 
-.. code-block:: python
+..  code-block:: python
 
+    import os
     from feather import Collection, Item, FileCollection, FileItem, FileStore
 
     # Setup the storage
@@ -97,3 +100,5 @@ There are disadvantages which we need to overcome:
   what the client tells it. E.g. imagine a client successfully uploads the file but the patch to update the resource with the
   new URL goes wrong. To overcome this, you could take a look at 'Resumable Uploads'.
   We will be looking at whether Feather can provide any nice api to help with this in the future.
+
+.. _tutorial: https://falcon.readthedocs.io/en/stable/user/tutorial.html#serving-images
