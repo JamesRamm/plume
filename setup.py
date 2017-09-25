@@ -20,7 +20,7 @@ def get_version(*file_paths):
     raise RuntimeError('Unable to find version string.')
 
 
-VERSION = get_version("plumeest", "__init__.py")
+VERSION = get_version("plume", "__init__.py")
 
 if sys.argv[-1] == 'publish':
     try:
