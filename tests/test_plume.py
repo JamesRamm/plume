@@ -5,9 +5,9 @@ import pytest
 import falcon
 from falcon import testing
 
-from feather.connection import connect, disconnect, get_database
-from feather import FileCollection, FileItem, FileStore
-from feather.storage import unique_id
+from plume.connection import connect, disconnect, get_database
+from plume import FileCollection, FileItem, FileStore
+from plume.storage import unique_id
 from .app import create, UserSchema, FilterSchema
 
 @pytest.fixture
@@ -268,7 +268,7 @@ class TestSchema:
 
     def test_db_name(self):
         schema = UserSchema()
-        assert schema._db_name() == 'feather_userschema'
+        assert schema._db_name() == 'plume_userschema'
 
     def test_uniqueness(self):
         """Test we cannot make duplicate entries

@@ -1,6 +1,6 @@
 import falcon
-from feather.resource import Collection, Item, FileCollection, FileItem
-from feather.storage import FileStore
+from plume.resource import Collection, Item, FileCollection, FileItem
+from plume.storage import FileStore
 
 __version__ = "0.1.0"
 
@@ -14,9 +14,9 @@ def create_app(resources):
             or any other object which inherits/implements ``Collection``.
 
     Example:
-        >>> from feather import create_app
-        >>> from feather.resource import Collection, Item
-        >>> from feather.schema import MongoSchema
+        >>> from plume import create_app
+        >>> from plume.resource import Collection, Item
+        >>> from plume.schema import MongoSchema
         >>> from marshmallow import fields
         >>> class User(MongoSchema):
         ...   email = fields.Email(required=True)

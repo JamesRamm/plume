@@ -1,9 +1,9 @@
-"""Hooks for working with a ``FeatherResource``
+"""Hooks for working with a ``PlumeResource``
 """
 import falcon
 
 def validate_content_type(req, resp, resource, params):
-    """Validate the content type of a ``FeatherResource``
+    """Validate the content type of a ``PlumeResource``
     """
     if (resource.allowed_content_types
             and req.content_type

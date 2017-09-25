@@ -1,11 +1,11 @@
-"""The falcon webapp to use in testing feather.
+"""The falcon webapp to use in testing plume.
 
-Serves as an example of making a web app with feather
+Serves as an example of making a web app with plume
 """
 from datetime import datetime
 from marshmallow import Schema, fields
-from feather.schema import MongoSchema
-from feather import create_app, Collection, Item
+from plume.schema import MongoSchema
+from plume import create_app, Collection, Item
 import simplejson
 
 class UserSchema(MongoSchema):

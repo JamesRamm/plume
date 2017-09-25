@@ -9,36 +9,36 @@ Schemas and fields
 Inherit from ``MongoSchema`` to start creating schemas which are materialized to MongoDB.
 A ``MongoSchema`` is just a marshmallow schema with extra functions to give it ORM-like abilities.
 
-.. automodule:: feather.schema
+.. automodule:: plume.schema
     :members: MongoSchema
 
 
 Some useful fields for using marshmallow as a MongoDB ORM are also provided.
 
-.. automodule:: feather.fields
+.. automodule:: plume.fields
     :members:
 
 
 Resources and hooks
 --------------------
 
-.. automodule:: feather.resource
+.. automodule:: plume.resource
     :members:
 
 
-.. automodule:: feather.hooks
+.. automodule:: plume.hooks
     :members:
 
 
 Storage
 --------
 
-.. automodule:: feather.storage
+.. automodule:: plume.storage
     :members:
 
 
 Connecting to a database
 --------------------------
 
-.. automodule:: feather.connection
+.. automodule:: plume.connection
     :members:

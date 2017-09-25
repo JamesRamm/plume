@@ -6,9 +6,9 @@ The connections to mongodb are cached. Inspired by MongoEngine
 import pymongo
 from bson.objectid import ObjectId
 from marshmallow import Schema, fields, SchemaOpts
-from feather.connection import get_database
-from feather import errors
-from feather.fields import MongoId
+from plume.connection import get_database
+from plume import errors
+from plume.fields import MongoId
 
 def _check_object_id(filter_spec):
     """Replaces the object id string in a filter spec with a pymongo
@@ -36,7 +36,7 @@ class MongoSchema(Schema):
     This enables marshmallow to behave as an ORM to MongoDB
 
     ``MongoSchema`` does not override any marshmallow methods. Instead it provides
-    new methods which are recognised by feathers 'Resource' classes.
+    new methods which are recognised by plumes 'Resource' classes.
     Therefore, the database will not be affected if you call ``dump``/``dumps``
      or ``load``/``loads``
 

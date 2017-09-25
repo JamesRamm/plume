@@ -1,9 +1,9 @@
-Feather
-=======
+Plume
+==========
 
-Feather is a library to help you create Falcon API's backed by MongoDB.
+Plume is a library to help you create Falcon API's backed by MongoDB.
 
-Using feather, you can make `schemas` which are backed by MongoDB. Feather also provides
+Using plume, you can make `schemas` which are backed by MongoDB. Plume also provides
 default Falcon resources which provide full CRUD functionality for your schemas.
 
 

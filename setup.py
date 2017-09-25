@@ -20,7 +20,7 @@ def get_version(*file_paths):
     raise RuntimeError('Unable to find version string.')
 
 
-VERSION = get_version("feather", "__init__.py")
+VERSION = get_version("plumeest", "__init__.py")
 
 if sys.argv[-1] == 'publish':
     try:
@@ -61,19 +61,19 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name='feather',
+    name='plume',
     version=VERSION,
     description="Easy webapps with falcon & mongodb",
     long_description=README + '\n\n' + HISTORY,
     author="James Ramm",
     author_email='jamessramm@gmail.com',
-    url='https://github.com/JamesRamm/feather',
-    packages=find_packages(include=['feather']),
+    url='https://github.com/JamesRamm/plume',
+    packages=find_packages(include=['plume']),
     include_package_data=True,
     install_requires=REQUIREMENTS,
     license="GNU General Public License v3",
     zip_safe=False,
-    keywords='feather',
+    keywords='plume',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

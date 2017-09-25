@@ -1,24 +1,24 @@
 =======
-Feather
+Plume
 =======
 
 
-.. image:: https://img.shields.io/pypi/v/feather.svg
-        :target: https://pypi.python.org/pypi/feather
+.. image:: https://img.shields.io/pypi/v/plume.svg
+        :target: https://pypi.python.org/pypi/plume
 
-.. image:: https://img.shields.io/travis/JamesRamm/feather.svg
-        :target: https://travis-ci.org/JamesRamm/feather
+.. image:: https://img.shields.io/travis/JamesRamm/plume.svg
+        :target: https://travis-ci.org/JamesRamm/plume
 
-.. image:: https://readthedocs.org/projects/feather/badge/?version=latest
-        :target: https://feather.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/plume/badge/?version=latest
+        :target: https://plume.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://landscape.io/github/JamesRamm/feather/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/JamesRamm/feather/master
+.. image:: https://landscape.io/github/JamesRamm/plume/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/JamesRamm/plume/master
    :alt: Code Health
 
-.. image:: https://pyup.io/repos/github/JamesRamm/feather/shield.svg
-     :target: https://pyup.io/repos/github/JamesRamm/feather/
+.. image:: https://pyup.io/repos/github/JamesRamm/plume/shield.svg
+     :target: https://pyup.io/repos/github/JamesRamm/plume/
      :alt: Updates
 
 
@@ -35,7 +35,7 @@ Features
 - Easy filtering/projection of documents per request
 
 - The ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
-  to use feathers' basic ``FileStore`` or your own storage backend (e.g. GridFS)
+  to use plumes' basic ``FileStore`` or your own storage backend (e.g. GridFS)
 
 - Useful extra fields for marshmallow (``Choice``, ``Slug``, ``MongoId``, ``Password``...)
 
@@ -48,9 +48,9 @@ The following example creates a basic JSON API for a representation of a user.
 ..  code-block:: python
 
     from datetime import datetime
-    from feather import create_app, schema, Collection, Item
-    from feather.connection import connect
-    from feather.fields import Slug
+    from plume import create_app, schema, Collection, Item
+    from plume.connection import connect
+    from plume.fields import Slug
     from marshmallow import fields, Schema
 
     class UserSchema(schema.MongoSchema):
@@ -90,7 +90,7 @@ Name this file ``app.py`` and run it with gunicorn:
 Design
 ----------
 
-Feather intends to be a light and transparent library. It should compliment and enhance
+Plume intends to be a light and transparent library. It should compliment and enhance
 Falcon & MongoDB usage but not get in the way of custom development.
 To this end I have a small number of rules:
 
@@ -103,7 +103,7 @@ To this end I have a small number of rules:
 - No reinvention. We try to use well proven existing solutions before rolling our own. Hence the use
   of ``marshmallow`` for the ORM/serialization framework.
 
-- No hijacking. Feather is complimentary or an 'add-on' to Falcon. It does not replace direct usage of Falcon (what
+- No hijacking. Plume is complimentary or an 'add-on' to Falcon. It does not replace direct usage of Falcon (what
   you might expect from a framework). It solves some common use cases and provides some useful tools. When you want to
   do something unsupported and go direct to falcon, it doesnt get in your way.
 

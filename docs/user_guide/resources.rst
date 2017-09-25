@@ -19,7 +19,7 @@ Using the ``Person`` schema we created in the previous chapter, we can declare o
 
 ..  code-block:: python
 
-    from feather import Collection, Item
+    from plume import Collection, Item
 
     person = Person()
 
@@ -33,7 +33,7 @@ With the resources ready, you can use a factory function to create a Falcon app:
 
 ..  code-block:: python
 
-    from feather import create_app
+    from plume import create_app
 
     # ``application`` is an instance of ``falcon.API``
     application = create_app(resources)
@@ -44,7 +44,7 @@ All ``create_app`` does is instantiate an app and call Falcons' ``add_route`` fo
 File Storage
 --------------
 
-Feather also provides basic ``FileCollection`` and ``FileItem`` resource classes, specifically intended
+Plume also provides basic ``FileCollection`` and ``FileItem`` resource classes, specifically intended
 for serving and accepting file data.
 As with ``Collection`` and ``Item`` resources, you can configure the uri template, allowed content types and
 HTTP methods.
@@ -54,7 +54,7 @@ The storage class should provide ``save``, ``open`` and ``list`` methods.
 ``save`` and ``open`` are fairly clear and are as explained in the falcon tutorial.
 ``list`` should return the URL's of all available files in the store.
 
-Feather provides a basic file store - ``feather.FileStore`` which can be used.
+Plume provides a basic file store - ``plume.FileStore`` which can be used.
 
 All this makes it easy to add file handling. Expanding the resources example:
 
@@ -62,7 +62,7 @@ All this makes it easy to add file handling. Expanding the resources example:
 ..  code-block:: python
 
     import os
-    from feather import Collection, Item, FileCollection, FileItem, FileStore
+    from plume import Collection, Item, FileCollection, FileItem, FileStore
 
     # Setup the storage
     path = os.path.dirname(__file__)
@@ -81,7 +81,7 @@ Handling files in schemas
 ++++++++++++++++++++++++++
 
 If you come from django, you might be expecting some sort of ``FileField`` you can declare on a schema.
-Feather does not provide this; This keeps your file storage logic completely separate from the rest of the app,
+Plume does not provide this; This keeps your file storage logic completely separate from the rest of the app,
 meaning you could potentially swap out your file store for a GridFS backed store, or switch to a completely
 different service for hosting files.
 
@@ -96,9 +96,9 @@ There are disadvantages which we need to overcome:
     (It is a matter of some debate as to whether this should in fact be considered the best practice for REST API's since
      multipart form data is not truly JSON or XML)
 
-- Feather offers no validation or method by which to link a file upload to a subsequent patch request other than
+- Plume offers no validation or method by which to link a file upload to a subsequent patch request other than
   what the client tells it. E.g. imagine a client successfully uploads the file but the patch to update the resource with the
   new URL goes wrong. To overcome this, you could take a look at 'Resumable Uploads'.
-  We will be looking at whether Feather can provide any nice api to help with this in the future.
+  We will be looking at whether Plume can provide any nice api to help with this in the future.
 
 .. _tutorial: https://falcon.readthedocs.io/en/stable/user/tutorial.html#serving-images

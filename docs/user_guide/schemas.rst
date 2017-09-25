@@ -3,13 +3,13 @@ Schemas
 =======
 
 
-Feather uses marshmallow ``Schema``'s to define MongoDB documents.
+Plume uses marshmallow ``Schema``'s to define MongoDB documents.
 If you are not familiar with marshmallow, take a look at http://marshmallow.readthedocs.io/en/latest/index.html
 The schema integrates with pymongo in order to deliver data to and from the database. To keep this efficient,
 the pymongo integration is very light; it is worth being familiar with pymongo if you need to do more complex
 database logic.
 
-A feather schema is defined exactly like a marshmallow schema except it inherits from ``MongoSchema``.
+A plume schema is defined exactly like a marshmallow schema except it inherits from ``MongoSchema``.
 This provides a few new methods which will both materialize schema data to the database and get documents
 from the database.
 
@@ -17,7 +17,7 @@ Here is an example of defining a schema:
 
 ..  code-block:: python
 
-    from feather import schema
+    from plume import schema
     from marshmallow import fields
 
     class Person(schema.MongoSchema):
@@ -28,13 +28,13 @@ Here is an example of defining a schema:
 
 Like a regular marshmallow schema, you can call ``dumps`` and ``loads`` to serialize and deserialize data.
 You can do this safely with no impact on the database (just like marshamllow). In order to save/get data from
-the database, Feather provides new methods and resource classes to work directly with these methods.
+the database, Plume provides new methods and resource classes to work directly with these methods.
 
 Since the schema will be backed by MongoDB, we must connect before creating an instance:
 
 .. code-block:: python
 
-    from feather import connection
+    from plume import connection
 
     # Without arguments we connect to the default database on localhost
     client = connect()
@@ -43,14 +43,14 @@ Since the schema will be backed by MongoDB, we must connect before creating an i
 Database constraints
 --------------------
 
-Feather schemas have support for creating constraints on the database. These are defined in the marshmallow
+Plume schemas have support for creating constraints on the database. These are defined in the marshmallow
 ``Meta`` options class:
 
 
 .. code-block:: python
 
     import simplejson
-    from feather import schema
+    from plume import schema
     from marshmallow import fields
 
     class Person(schema.MongoSchema):
@@ -78,7 +78,7 @@ will handle its' creation:
 .. code-block:: python
 
     import simplejson
-    from feather import schema
+    from plume import schema
     from marshmallow import fields, Schema
 
     class Person(schema.MongoSchema):
@@ -100,7 +100,7 @@ will handle its' creation:
 Further Usage
 ----------------
 
-- Feather supplies a small number of extra fields for use with your schemas, such as ``Choice``, ``Slug`` and ``MongoId``.
+- Plume supplies a small number of extra fields for use with your schemas, such as ``Choice``, ``Slug`` and ``MongoId``.
 - If you wish to interact with the pymongo ``collection`` instance directly, you can call ``get_collection`` on any
 class inheriting from ``MongoSchema``.
 - By implementing the ``get_filter`` method on your schema class, you can provide per request

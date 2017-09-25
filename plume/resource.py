@@ -3,8 +3,8 @@
 import mimetypes
 import falcon
 import simplejson
-from feather.hooks import validate_content_type
-from feather import errors
+from plume.hooks import validate_content_type
+from plume import errors
 
 
 def basic_error_handler(error_dict):
@@ -23,7 +23,7 @@ def basic_error_handler(error_dict):
         raise falcon.HTTPBadRequest('Validation Error', error_dict)
 
 
-class FeatherResource(object):
+class PlumeResource(object):
     """Base class used for setting a uri_template, allowed content types
     and HTTP methods provided.
 
@@ -46,7 +46,7 @@ class FeatherResource(object):
     Args:
 
         uri_template (str): A URI template for this resource which will be used
-            when routing (using the ``feather.create_app`` factory function) and
+            when routing (using the ``plume.create_app`` factory function) and
             for setting ``Location`` headers.
 
         content_types (tuple, set or list): List of allowed content_types. This is not
@@ -58,7 +58,7 @@ class FeatherResource(object):
 
         error_handler (callable): A function which is responsible for handling validation
             errors returned by a marshmallow schema.
-            Defaults to ``feather.resource.basic_error_handler``
+            Defaults to ``plume.resource.basic_error_handler``
     """
     def __init__(
             self,
@@ -145,7 +145,7 @@ class FeatherResource(object):
         raise falcon.HTTP_METHOD_NOT_ALLOWED
 
 
-class Collection(FeatherResource):
+class Collection(PlumeResource):
     """Generic class for listing/creating data via a schema
 
     Using falcons before/after decorators.
@@ -168,15 +168,15 @@ class Collection(FeatherResource):
 
     Args:
 
-        schema (feather.schema.MongoSchema): An instance of a ``MongoSchema`` child class on which the
+        schema (plume.schema.MongoSchema): An instance of a ``MongoSchema`` child class on which the
             ``Collection`` instance should operate.
 
-        uri_template (str): See ``feather.resource.FeatherResource``
-        content_types (tuple or list): See ``feather.resource.FeatherResource``.
+        uri_template (str): See ``plume.resource.PlumeResource``
+        content_types (tuple or list): See ``plume.resource.PlumeResource``.
              Defaults to ``'application/json'``
-        methods (str): See ``feather.resource.FeatherResource``.
+        methods (str): See ``plume.resource.PlumeResource``.
             Defaults to ``('get', 'post')``
-        error_handler (callable): See ``feather.resource.FeatherResource``.
+        error_handler (callable): See ``plume.resource.PlumeResource``.
 
     """
     def __init__(
@@ -222,19 +222,19 @@ class Collection(FeatherResource):
         self._error_handler(error_dict)
         resp.status = falcon.HTTP_CREATED
 
-class Item(FeatherResource):
+class Item(PlumeResource):
     """Generic class for getting/editing a single data item via a schema
 
     Args:
 
-        schema (feather.schema.MongoSchema): An instance of a ``MongoSchema`` child class
+        schema (plume.schema.MongoSchema): An instance of a ``MongoSchema`` child class
             on which the ``Item`` instance should operate.
-        uri_template (str): See ``feather.resource.FeatherResource``
-        content_types (tuple or list): See ``feather.resource.FeatherResource``.
+        uri_template (str): See ``plume.resource.PlumeResource``
+        content_types (tuple or list): See ``plume.resource.PlumeResource``.
              Defaults to ``'application/json'``
-        methods (str): See ``feather.resource.FeatherResource``.
+        methods (str): See ``plume.resource.PlumeResource``.
             Defaults to ``('get', 'put', 'patch', 'delete')``
-        error_handler (callable): See ``feather.resource.FeatherResource``.
+        error_handler (callable): See ``plume.resource.PlumeResource``.
     """
     def __init__(
             self,
@@ -295,7 +295,7 @@ class Item(FeatherResource):
         resp.status = falcon.HTTP_NO_CONTENT
 
 
-class FileCollection(FeatherResource):
+class FileCollection(PlumeResource):
     """Collection for posting/listing file uploads.
 
     By default, all content types are allowed - usually you would want to limit this, e.g. just
@@ -324,7 +324,7 @@ class FileCollection(FeatherResource):
         resp.location = "{}/{}".format(self._uri, name)
 
 
-class FileItem(FeatherResource):
+class FileItem(PlumeResource):
     """Item resource for interacting with single files
     """
     def __init__(self, store, uri_template='/files/{name}', content_types=None, methods=('get',)):

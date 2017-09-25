@@ -1,4 +1,4 @@
-* feather version:
+* plume version:
 * Python version:
 * Operating System:
 
