@@ -10,7 +10,7 @@ Inherit from ``MongoSchema`` to start creating schemas which are materialized to
 A ``MongoSchema`` is just a marshmallow schema with extra functions to give it ORM-like abilities.
 
 .. automodule:: feather.schema
-    :members:
+    :members: MongoSchema
 
 
 Some useful fields for using marshmallow as a MongoDB ORM are also provided.
