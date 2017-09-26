@@ -10,7 +10,7 @@ Plume
         :target: https://travis-ci.org/JamesRamm/plume
 
 .. image:: https://readthedocs.org/projects/plume/badge/?version=latest
-        :target: https://plume.readthedocs.io/en/latest/?badge=latest
+        :target: http://plume.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 .. image:: https://landscape.io/github/JamesRamm/plume/master/landscape.svg?style=flat
