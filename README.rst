@@ -22,22 +22,22 @@ Plume
      :alt: Updates
 
 
-A library to help you make Falcon web apps backed by MongoDB.
+A library to help you make Falcon_ web apps backed by MongoDB.
 
 Features
 ---------------
 
-- Simple interface to MongoDB using ``marshmallow`` schemas. This allows a single document
+- Simple interface to MongoDB using marshmallow_ schemas. This allows a single document
   definition which also provides serialization and validation
-
-- Standard ``Resource`` classes for creating a full CRUD JSON API for REST collections and items.
 
 - Easy filtering/projection of documents per request
 
-- The ``FileCollection`` and ``FileItem`` resources provide file upload functionality. They can be configured
-  to use plumes' basic ``FileStore`` or your own storage backend (e.g. GridFS)
+- Useful extra fields for Schemas (``Choice``, ``Slug``, ``MongoId``, ``Password``...)
 
-- Useful extra fields for marshmallow (``Choice``, ``Slug``, ``MongoId``, ``Password``...)
+- Standard ``Resource`` classes for creating a full CRUD JSON API for REST collections and items.
+
+- Resource classes for generic file uploads. They can be configured to use different storage backends,
+  and validate different content types
 
 
 Example
@@ -96,9 +96,10 @@ To this end I have a small number of rules:
 
 - No magic. Like falcon itself, it should be easy to follow inputs to outputs. To this end we have
   a few soft rules such as:
-        - Avoid mixins. Mixins introduce implicit dependencies and make it harder to reason about code.
-        - Don't mess with metaclasses and double underscore methods without good reason.
-          There is often an easier, clearer way to achieve the same result.
+
+  - Avoid mixins. Mixins introduce implicit dependencies and make it harder to reason about code.
+  - Don't mess with metaclasses and double underscore methods without good reason.
+    There is often an easier, clearer way to achieve the same result.
 
 - No reinvention. We try to use well proven existing solutions before rolling our own. Hence the use
   of ``marshmallow`` for the ORM/serialization framework.
@@ -109,4 +110,5 @@ To this end I have a small number of rules:
 
 
 
-
+.. _marshmallow: http://marshmallow.readthedocs.io/en/latest/index.html
+.. _Falcon: https://falconframework.org/
