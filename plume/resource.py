@@ -65,11 +65,13 @@ class PlumeResource(object):
             uri_template,
             content_types=('application/json',),
             methods=('get', 'patch', 'put', 'delete', 'post'),
-            error_handler=basic_error_handler
+            error_handler=basic_error_handler,
+            use_jsonpatch=False
     ):
         self._uri = uri_template
         self._content_types = content_types
         self._error_handler = error_handler
+        self._use_jsonpatch = use_jsonpatch
 
         # We dynamically set attributes for the expected
         # falcon HTTP method handlers.
@@ -241,9 +243,17 @@ class Item(PlumeResource):
             schema,
             uri_template,
             content_types=('application/json'),
-            methods=('get', 'patch', 'put', 'delete')
+            methods=('get', 'patch', 'put', 'delete'),
+            error_handler=basic_error_handler,
+            use_jsonpatch=False
     ):
-        super(Item, self).__init__(uri_template, content_types, methods)
+        super(Item, self).__init__(
+            uri_template,
+            content_types,
+            methods,
+            error_handler,
+            use_jsonpatch
+        )
         self._schema = schema
 
     def _get(self, req, resp, **kwargs):
@@ -283,7 +293,7 @@ class Item(PlumeResource):
         """Update an existing schema object with the given data
         """
         data = req.bounded_stream.read()
-        _, error_dict = self._schema.patch(kwargs, data)
+        _, error_dict = self._schema.patch(kwargs, data, self._use_jsonpatch)
         self._error_handler(error_dict)
         resp.status = falcon.HTTP_ACCEPTED
         resp.location = self.uri_template.format(**kwargs)

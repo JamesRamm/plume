@@ -9,6 +9,7 @@ from marshmallow import Schema, SchemaOpts
 from plume.connection import get_database
 from plume import errors
 from plume.fields import MongoId
+from plume.patch import patch_to_mongo
 
 def _check_object_id(filter_spec):
     """Replaces the object id string in a filter spec with a pymongo
@@ -155,7 +156,7 @@ class MongoSchema(Schema):
         return validated
 
 
-    def patch(self, filter_spec, data):
+    def patch(self, filter_spec, data, jsonpatch=False):
         """'Patch' (update) an existing document
 
         Args:
@@ -163,17 +164,24 @@ class MongoSchema(Schema):
                 to be updated
 
             data: JSON data to be validated, deserialized and used to update a document.
-                The data should be formatted according to the JSONPatch specification (http://jsonpatch.com/)
+                By default, JSON data is expected to be expressed using MongoDB update operators
+                (https://docs.mongodb.com/manual/reference/operator/update/)
+                By passing ``jsonpatch=True`` data can be formatted according to the JSONPatch specification (http://jsonpatch.com/). This
+                support is experimental
+
+            jsonpatch (boolean, False): Enable experimental support for jsonpatch. In this case, ``data`` should follow the jsonpatch format
         """
-        validated = self.loads(data, partial=True)
+        error_dict = {}
         collection = self.get_collection()
         _check_object_id(filter_spec)
         try:
-            collection.update_one(filter_spec, {"$set": validated.data})
+            if jsonpatch:
+                data = patch_to_mongo(data)
+            collection.update_one(filter_spec, data)
         except pymongo.errors.DuplicateKeyError as error:
-            validated.errors[errors.DUPLICATE_KEY] = error.details
+            error_dict[errors.DUPLICATE_KEY] = error.details
 
-        return validated
+        return error_dict
 
     def put(self, filter_spec, data):
         """'Put' (replace) an existing document
