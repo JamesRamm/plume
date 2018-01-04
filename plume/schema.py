@@ -139,17 +139,18 @@ class MongoSchema(Schema):
                 & deserialized data dict and any errors.
         """
         validated = self.loads(data)
-        # Retrieve the collection in which this document should be inserted
-        collection = self.get_collection()
+        if not validated.errors:
+            # Retrieve the collection in which this document should be inserted
+            collection = self.get_collection()
 
-        # Insert document(s) into the collection
-        try:
-            if self.many:
-                collection.insert_many(validated.data)
-            else:
-                collection.insert_one(validated.data)
-        except pymongo.errors.DuplicateKeyError as error:
-            validated.errors[errors.DUPLICATE_KEY] = error.details
+            # Insert document(s) into the collection
+            try:
+                if self.many:
+                    collection.insert_many(validated.data)
+                else:
+                    collection.insert_one(validated.data)
+            except pymongo.errors.DuplicateKeyError as error:
+                validated.errors[errors.DUPLICATE_KEY] = error.details
 
         return validated
 
@@ -161,7 +162,8 @@ class MongoSchema(Schema):
             filter_spec (dict): The pymongo filter spec to match a single document
                 to be updated
 
-            data: JSON data to be validated, deserialized and used to update a document
+            data: JSON data to be validated, deserialized and used to update a document.
+                The data should be formatted according to the JSONPatch specification (http://jsonpatch.com/)
         """
         validated = self.loads(data, partial=True)
         collection = self.get_collection()
@@ -179,12 +181,13 @@ class MongoSchema(Schema):
         See documentation for ``MongoSchema.patch``
         """
         validated = self.loads(data)
-        collection = self.get_collection()
-        _check_object_id(filter_spec)
-        try:
-            collection.replace_one(filter_spec, validated.data)
-        except pymongo.errors.DuplicateKeyError as error:
-            validated.errors[errors.DUPLICATE_KEY] = error.details
+        if not validated.errors:
+            collection = self.get_collection()
+            _check_object_id(filter_spec)
+            try:
+                collection.replace_one(filter_spec, validated.data)
+            except pymongo.errors.DuplicateKeyError as error:
+                validated.errors[errors.DUPLICATE_KEY] = error.details
 
         return validated
 
