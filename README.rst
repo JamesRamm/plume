@@ -85,7 +85,9 @@ The following example creates a basic JSON API for a representation of a user.
 
 Name this file ``app.py`` and run it with gunicorn:
 
-        gunicorn 'app:get_app()'
+.. code-block:: bash
+
+    gunicorn 'app:get_app()'
 
 Design
 ----------
