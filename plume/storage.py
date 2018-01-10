@@ -58,6 +58,12 @@ class FileStore(object):
 
         return stream, stream_len
 
+    def delete(self, name):
+        # Validate the requested filename
+        if not self._validate_filename(name):
+            raise IOError('File not found')
+        os.remove(os.path.join(self._storage_path, name))
+
     def list(self):
         uploads = [name for name
                    in os.listdir(self._storage_path)
