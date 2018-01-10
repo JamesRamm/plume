@@ -8,7 +8,7 @@ def unique_id():
     """Simplistic unique ID generation.
     The returned ID is just the current timestamp (in ms) converted to hex
     """
-    return hex(int(time()*1000000))
+    return hex(int(time()*100000000000))
 
 
 class FileStore(object):
