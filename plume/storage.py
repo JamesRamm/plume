@@ -32,6 +32,11 @@ class FileStore(object):
         name = os.path.splitext(filename)[0]
         return self._name_pattern.match(name)
 
+    def _get_path(self, filename):
+        """Get the abs path of a file
+        """
+        return os.path.join(self._storage_path, filename)
+
     def save(self, stream, image_content_type):
         ext = mimetypes.guess_extension(image_content_type)
         name = '{uuid}{ext}'.format(uuid=self._namegen(), ext=ext)
@@ -52,7 +57,7 @@ class FileStore(object):
         if not self._validate_filename(name):
             raise IOError('File not found')
 
-        image_path = os.path.join(self._storage_path, name)
+        image_path = self._get_path(name)
         stream = self._fopen(image_path, 'rb')
         stream_len = os.path.getsize(image_path)
 
@@ -62,7 +67,7 @@ class FileStore(object):
         # Validate the requested filename
         if not self._validate_filename(name):
             raise IOError('File not found')
-        os.remove(os.path.join(self._storage_path, name))
+        os.remove(self._get_path(name))
 
     def list(self):
         uploads = [name for name
