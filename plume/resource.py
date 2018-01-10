@@ -293,10 +293,15 @@ class Item(PlumeResource):
         """Update an existing schema object with the given data
         """
         data = req.bounded_stream.read()
-        _, error_dict = self._schema.patch(kwargs, data, self._use_jsonpatch)
+        data = simplejson.loads(data)
+        error_dict = self._schema.patch(kwargs, data, self._use_jsonpatch)
         self._error_handler(error_dict)
         resp.status = falcon.HTTP_ACCEPTED
-        resp.location = self.uri_template.format(**kwargs)
+        try:
+            # handle case where the uri identifier is changed
+            resp.location = self.uri_template.format(**data["$set"])
+        except KeyError:
+            resp.location = self.uri_template.format(**kwargs)
 
     def _delete(self, req, resp, **kwargs):
         """Delete an object
