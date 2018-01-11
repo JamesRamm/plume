@@ -96,7 +96,10 @@ class PlumeResource(object):
         return self._content_types
 
     def get_projection(self, req):
-        return None
+        try:
+            return {field: True for field in req.params["fields"]}
+        except KeyError:
+            pass
 
     def before_serialize(self, req, cursor):
         return cursor
