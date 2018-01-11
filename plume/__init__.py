@@ -4,7 +4,7 @@ from plume.storage import FileStore
 
 __version__ = "0.1.0"
 
-def create_app(resources, middleware):
+def create_app(resources, middleware=None):
     """Create a falcon app and add a route
     for all the resources
 
