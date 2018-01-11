@@ -66,12 +66,14 @@ class PlumeResource(object):
             content_types=('application/json',),
             methods=('get', 'patch', 'put', 'delete', 'post'),
             error_handler=basic_error_handler,
-            use_jsonpatch=False
+            use_jsonpatch=False,
+            schema=None
     ):
         self._uri = uri_template
         self._content_types = content_types
         self._error_handler = error_handler
         self._use_jsonpatch = use_jsonpatch
+        self._schema = schema
 
         # We dynamically set attributes for the expected
         # falcon HTTP method handlers.
@@ -98,6 +100,16 @@ class PlumeResource(object):
 
     def before_serialize(self, req, cursor):
         return cursor
+
+    def serialize_to_response(self, cursor, req, resp, many=False):
+        if cursor:
+            cursor = self.before_serialize(req, cursor)
+            result = self._schema.dumps(cursor, many=many)
+            resp.body = result.data
+            resp.content_type = falcon.MEDIA_JSON
+            resp.status = falcon.HTTP_OK
+        else:
+            raise falcon.HTTPNotFound()
 
     def _post(self, req, resp):
         """POST request handler.
@@ -199,9 +211,9 @@ class Collection(PlumeResource):
             uri_template,
             content_types,
             methods,
-            error_handler
+            error_handler,
+            schema=schema
         )
-        self._schema = schema
 
     def _get(self, req, resp):
         """List all schmea objects in the database.
@@ -215,11 +227,7 @@ class Collection(PlumeResource):
         filter_spec = self._schema.get_filter(req)
         filter_spec["projection"] = self.get_projection(req)
         cursor = self._schema.find(**filter_spec)
-        cursor = self.before_serialize(req, cursor)
-        result = self._schema.dumps(cursor, many=True)
-        resp.body = result.data
-        resp.content_type = falcon.MEDIA_JSON
-        resp.status = falcon.HTTP_OK
+        self.serialize_to_response(cursor, req, resp, True)
 
     @falcon.before(validate_content_type)
     def _post(self, req, resp):
@@ -261,9 +269,9 @@ class Item(PlumeResource):
             content_types,
             methods,
             error_handler,
-            use_jsonpatch
+            use_jsonpatch,
+            schema=schema
         )
-        self._schema = schema
 
     def _get(self, req, resp, **kwargs):
         """Get a representation of a single object in the schema.
@@ -280,14 +288,7 @@ class Item(PlumeResource):
         except KeyError:
             pass
         document = self._schema.get(kwargs, **filter_spec)
-        if document:
-            document = self.before_serialize(req, document)
-            result = self._schema.dumps(document)
-            resp.body = result.data
-            resp.content_type = falcon.MEDIA_JSON
-            resp.status = falcon.HTTP_OK
-        else:
-            raise falcon.HTTPNotFound()
+        self.serialize_to_response(document, req, resp)
 
     @falcon.before(validate_content_type)
     def _put(self, req, resp, **kwargs):
