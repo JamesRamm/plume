@@ -97,7 +97,11 @@ class PlumeResource(object):
 
     def get_projection(self, req):
         try:
-            return {field: True for field in req.params["fields"]}
+            if isinstance(req.params["fields"], list):
+                project = {field: True for field in req.params["fields"]}
+            else:
+                project = {req.params["fields"]: True}
+            return project
         except KeyError:
             pass
 
