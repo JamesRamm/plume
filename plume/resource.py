@@ -93,6 +93,9 @@ class PlumeResource(object):
     def allowed_content_types(self):
         return self._content_types
 
+    def get_projection(self, req):
+        return None
+
     def _post(self, req, resp):
         """POST request handler.
 
@@ -206,7 +209,9 @@ class Collection(PlumeResource):
         list of objects to return.
         """
         # dump all schema objects
-        cursor = self._schema.find(**self._schema.get_filter(req))
+        filter_spec = self._schema.get_filter(req)
+        filter_spec["projection"] = self.get_projection()
+        cursor = self._schema.find(**filter_spec)
         result = self._schema.dumps(cursor, many=True)
         resp.body = result.data
         resp.content_type = falcon.MEDIA_JSON
@@ -264,6 +269,7 @@ class Item(PlumeResource):
         ``get_filter``
         """
         filter_spec = self._schema.get_filter(req)
+        filter_spec["projection"] = self.get_projection()
         try:
             kwargs.update(filter_spec['filter'])
             del filter_spec['filter']
