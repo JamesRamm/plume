@@ -96,6 +96,9 @@ class PlumeResource(object):
     def get_projection(self, req):
         return None
 
+    def before_serialize(self, req, cursor):
+        return cursor
+
     def _post(self, req, resp):
         """POST request handler.
 
@@ -212,6 +215,7 @@ class Collection(PlumeResource):
         filter_spec = self._schema.get_filter(req)
         filter_spec["projection"] = self.get_projection(req)
         cursor = self._schema.find(**filter_spec)
+        cursor = self.before_serialize(req, cursor)
         result = self._schema.dumps(cursor, many=True)
         resp.body = result.data
         resp.content_type = falcon.MEDIA_JSON
@@ -277,6 +281,7 @@ class Item(PlumeResource):
             pass
         document = self._schema.get(kwargs, **filter_spec)
         if document:
+            document = self.before_serialize(req, document)
             result = self._schema.dumps(document)
             resp.body = result.data
             resp.content_type = falcon.MEDIA_JSON
