@@ -210,7 +210,7 @@ class Collection(PlumeResource):
         """
         # dump all schema objects
         filter_spec = self._schema.get_filter(req)
-        filter_spec["projection"] = self.get_projection()
+        filter_spec["projection"] = self.get_projection(req)
         cursor = self._schema.find(**filter_spec)
         result = self._schema.dumps(cursor, many=True)
         resp.body = result.data
@@ -269,7 +269,7 @@ class Item(PlumeResource):
         ``get_filter``
         """
         filter_spec = self._schema.get_filter(req)
-        filter_spec["projection"] = self.get_projection()
+        filter_spec["projection"] = self.get_projection(req)
         try:
             kwargs.update(filter_spec['filter'])
             del filter_spec['filter']
