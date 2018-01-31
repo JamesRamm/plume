@@ -74,7 +74,8 @@ class AuthHandler:
         """Get user details from the database
         """
         cursor = self._user_model.get({self._id_field: userid})
-        return self._user_model.dumps(cursor)
+        data, error self._user_model.dumps(cursor)
+        return data
 
     def login(self, request_data):
         """Authenticate a user given authentication data and returns an authorization token
