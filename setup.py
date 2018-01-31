@@ -8,7 +8,6 @@ import re
 from setuptools import setup, find_packages
 
 
-
 def get_version(*file_paths):
     """Retrieves the version from longclaw/__init__.py"""
     filename = os.path.join(os.path.dirname(__file__), *file_paths)
@@ -49,7 +48,9 @@ REQUIREMENTS = [
     'marshmallow==2.13.6',
     'pymongo==3.5.1',
     'falcon==1.3.0',
-    'simplejson==3.11.1'
+    'simplejson==3.11.1',
+    'pyjwt==1.5.3',
+    'passlib==1.7.1'
 ]
 
 SETUP_REQUIREMENTS = [
