@@ -45,11 +45,12 @@ class AuthHandler:
 
 
     """
-    def __init__(self, user_model, id_field="email", secret_key=None, token_algorithm='HS256', password_checker=None):
+    def __init__(self, user_model, id_field="email", password_field="password", secret_key=None, token_algorithm='HS256', password_checker=None):
         self._user_model = user_model
         self._id_field = id_field
         self._secret_key = secret_key or 'secretkey'
         self._algo = token_algorithm
+        self._pass_field = password_field
 
         if not password_checker:
             try:
@@ -85,14 +86,15 @@ class AuthHandler:
         """
         try:
             userid = request_data[self._id_field]
-            password = request_data["password"]
+            password = request_data[self._pass_field]
         except KeyError:
             return falcon.HTTPBadRequest(
                 'Password and {} should be submitted in request data'.format(self._id_field)
             )
 
         user = self._get_user(userid)
-        if user and self._pass_check(password, user["password"]):
+        print(user)
+        if user and self._pass_check(password, user[self._pass_field]):
             return self.create_jwt(userid)
         else:
             raise falcon.HTTPUnauthorized('Bad email/password combination, please try again')
