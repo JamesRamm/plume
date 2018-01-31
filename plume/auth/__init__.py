@@ -3,6 +3,7 @@ import json
 
 import falcon
 import jwt
+from passlib.hash import sha256_crypt
 
 from plume.auth.middleware import AuthMiddleware
 from plume.auth.resource import LoginResource
@@ -45,24 +46,13 @@ class AuthHandler:
 
 
     """
-    def __init__(self, user_model, id_field="email", password_field="password", secret_key=None, token_algorithm='HS256', password_checker=None):
+    def __init__(self, user_model, id_field="email", password_field="password", secret_key=None, token_algorithm='HS256', password_checker=sha256_crypt):
         self._user_model = user_model
         self._id_field = id_field
         self._secret_key = secret_key or 'secretkey'
         self._algo = token_algorithm
         self._pass_field = password_field
-
-        if not password_checker:
-            try:
-                from passlib.hash import sha256_crypt
-                self._pass_check = sha256_crypt.verify
-            except ImportError:
-                raise AttributeError(
-                    "You need to explicitly pass a password_checker argument or"
-                    " install passlib to use the default"
-                )
-        else:
-            self._pass_check = password_checker
+        self._pass_check = password_checker
 
     def login_resource(self, route):
         return LoginResource(route, self)
@@ -76,6 +66,9 @@ class AuthHandler:
         cursor = self._user_model.get({self._id_field: userid})
         result = self._user_model.dump(cursor)
         return result.data
+
+    def _hash_password(self, password):
+        return self._pass_check.hash(password)
 
     def login(self, request_data):
         """Authenticate a user given authentication data and returns an authorization token
@@ -94,7 +87,7 @@ class AuthHandler:
             )
 
         user = self._get_user(userid)
-        if user and self._pass_check(password, user[self._pass_field]):
+        if user and self._pass_check.verify(password, user[self._pass_field]):
             return self.create_jwt(userid)
         else:
             raise falcon.HTTPUnauthorized('Bad email/password combination, please try again')
