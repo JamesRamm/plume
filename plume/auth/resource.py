@@ -1,4 +1,4 @@
-import json
+import simplejson
 import falcon
 from plume.resource import PlumeResource
 
@@ -9,12 +9,7 @@ class LoginResource(PlumeResource):
         super(LoginResource, self).__init__(uri_template, methods=('post',))
 
     def _post(self, req, resp):
-
-        req_stream = req.stream.read()
-        if isinstance(req_stream, bytes):
-            data = json.loads(req_stream.decode())
-        else:
-            data = json.loads(req.stream.read())
-
+        data = req.bounded_stream.read()
+        data = simplejson.loads(data)
         token = self.auth_handler.login(data)
-        resp.body = json.dumps({'token': token})
+        resp.body = simplejson.dumps({'token': token})
