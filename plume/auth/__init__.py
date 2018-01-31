@@ -74,7 +74,7 @@ class AuthHandler:
         """Get user details from the database
         """
         cursor = self._user_model.get({self._id_field: userid})
-        result = self._user_model.dumps(cursor)
+        result = self._user_model.dump(cursor)
         return result.data
 
     def login(self, request_data):
@@ -94,7 +94,6 @@ class AuthHandler:
             )
 
         user = self._get_user(userid)
-        print(user)
         if user and self._pass_check(password, user[self._pass_field]):
             return self.create_jwt(userid)
         else:
