@@ -72,7 +72,7 @@ class AuthHandler:
     def _get_user(self, userid):
         """Get user details from the database
         """
-        cursor = self._user_model.get(**{self._id_field: userid})
+        cursor = self._user_model.get({self._id_field: userid})
         return self._user_model.dumps(cursor)
 
     def login(self, request_data):

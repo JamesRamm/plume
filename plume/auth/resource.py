@@ -10,6 +10,9 @@ class LoginResource(PlumeResource):
 
     def _post(self, req, resp):
         data = req.bounded_stream.read()
-        data = simplejson.loads(data)
-        token = self.auth_handler.login(data)
-        resp.body = simplejson.dumps({'token': token})
+        try:
+            data = simplejson.loads(data)
+            token = self.auth_handler.login(data)
+            resp.body = simplejson.dumps({'token': token})
+        except simplejson.scanner.JSONDecodeError:
+            raise falcon.HTTPBadRequest(title="No data submitted in POST")
