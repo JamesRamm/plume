@@ -97,7 +97,7 @@ class AuthHandler:
         default_exempt = [self._login_resource.__class__, self._registration_resource.__class__]
         if exempt:
             default_exempt.extend(exempt)
-        return AuthMiddleware(self, default_exempt)
+        return AuthMiddleware(self, tuple(default_exempt))
 
     def _get_user(self, userid):
         """Get user details from the database
