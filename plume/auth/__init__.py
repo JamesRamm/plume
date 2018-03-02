@@ -6,30 +6,39 @@ import jwt
 from passlib.hash import sha256_crypt
 
 from plume.auth.middleware import AuthMiddleware
-from plume.auth.resource import LoginResource
+from plume.auth.resource import LoginResource, RegistrationResource
 
 
 class AuthHandler:
     """Handles authentication and authorization using JWT.
 
-    The AuthHandler provides both a "Login" resource and an authentication
-    middleware.
+    The AuthHandler provides both a defaulut "Login" and "Registration" resource and a matching
+    authorization middleware.
 
     The AuthHandler encapsulates both these concepts to provide common
     functionality (JWT encoding/decoding and user serialization) to both.
+
+    Args:
+
+        login_resource (PlumeResource): As resource class instance which will handle POST login requests. This will be exempt from authorization
+        registration_resource (PlumeResource): As resource class instance which will handle POST registration requests. This will be exempt from authorization
 
     Usage:
 
         # Create an instance of the handler with your own user_model
         auth = AuthHandler(user_model, id_field="email")
-        # Register the login resource and middleware with your app
+        # Register the login & registration resource and middleware with your app
         auth_mw = auth.middleware()
-        login = auth.login_resource("route")
-        api = create_app([login], [auth_mw])
+        login = auth.login_resource("/login")
+        register = auth.registration_resource("/register")
 
-        # Instead of using plumes' `create_app` you can do:
+        # Create the falcon app
+        api = create_app([login, register], middleware = [auth_mw])
+
+        # Remember, the create app function is essentially a wrapper for the following:
         api = falcon.API(middleware=[auth_mw])
         api.add_route(login.uri_template, login)
+        api.add_route(register.uri_template, register)
 
     A successful request to the login route will receive a json web token in the 'token' field of
     the response body. This token should be used in the 'Authorization' header for subsequent
@@ -46,7 +55,16 @@ class AuthHandler:
 
 
     """
-    def __init__(self, user_model, id_field="email", password_field="password", secret_key=None, token_algorithm='HS256', password_checker=sha256_crypt):
+    def __init__(
+        self,
+        user_model,
+        id_field="email",
+        password_field="password",
+        secret_key=None,
+        token_algorithm='HS256',
+        password_checker=sha256_crypt,
+        login_resource=None,
+        registration_resource=None):
         self._user_model = user_model
         self._id_field = id_field
         self._secret_key = secret_key or 'secretkey'
@@ -54,11 +72,29 @@ class AuthHandler:
         self._pass_field = password_field
         self._pass_check = password_checker
 
-    def login_resource(self, route):
-        return LoginResource(route, self)
+        self._login_resource = login_resource
+        self._registration_resource = None
 
-    def middleware(self):
-        return AuthMiddleware(self, (LoginResource, ))
+    def login_resource(self, route):
+        """Get the login resource instance for this auth handler
+        """
+        if not self._login_resource:
+            self._login_resource = LoginResource(route, self)
+        return self._login_resource
+
+    def registration_resource(self, route):
+        if not self._registration_resource:
+            self._registration_resource = RegistrationResource(self._user_model, route)
+        return self._registration_resource
+
+    def middleware(self, exempt = None):
+        """Get the middleware for authorization.
+        By default, the login and registration resources are exempt
+        """
+        default_exempt = [self._login_resource.__class__, self._registration_resource.__class__]
+        if exempt:
+            default_exempt.extend(exempt)
+        return AuthMiddleware(self, default_exempt)
 
     def _get_user(self, userid):
         """Get user details from the database
