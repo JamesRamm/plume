@@ -1,5 +1,6 @@
 from marshmallow import fields, ValidationError
 from bson.objectid import ObjectId
+from plume.auth import DEFAULT_HASH
 
 
 class Slug(fields.Field):
@@ -28,6 +29,16 @@ class Slug(fields.Field):
             value = data[self._from]
 
         return str(value).lower().replace(' ', '-')
+
+class Password(fields.Field):
+    """Password field
+    """
+    def __init__(self, password_checker=DEFAULT_HASH, *args, **kwargs):
+        self._pass_check = password_checker
+        super(Password, self).__init__(*args, **kwargs)
+
+    def _deserialize(self, value, *args):
+        return self._pass_check.hash(value)
 
 class MongoId(fields.Field):
     """Represents a MongoDB object id

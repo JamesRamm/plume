@@ -9,6 +9,8 @@ from plume.auth.middleware import AuthMiddleware
 from plume.auth.resource import LoginResource, RegistrationResource
 
 
+DEFAULT_HASH = sha256_crypt
+
 class AuthHandler:
     """Handles authentication and authorization using JWT.
 
@@ -62,10 +64,11 @@ class AuthHandler:
         password_field="password",
         secret_key=None,
         token_algorithm='HS256',
-        password_checker=sha256_crypt,
+        password_checker=DEFAULT_HASH,
         login_resource=None,
         registration_resource=None):
         self._user_model = user_model
+        self._user_model.hash = self._hash_password
         self._id_field = id_field
         self._secret_key = secret_key or 'secretkey'
         self._algo = token_algorithm

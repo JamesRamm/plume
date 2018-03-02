@@ -1,6 +1,7 @@
 import simplejson
 import falcon
 from plume.resource import PlumeResource, Collection
+from plume.hooks import validate_content_type
 
 class LoginResource(PlumeResource):
 
@@ -25,3 +26,6 @@ class RegistrationResource(Collection):
             uri_template,
             methods=('post', )
         )
+
+
+
