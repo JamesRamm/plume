@@ -126,6 +126,7 @@ class AuthHandler:
             )
 
         user = self._get_user(userid)
+        print(user)
         if user and self._pass_check.verify(password, user[self._pass_field]):
             return self.create_jwt(userid)
         else:
