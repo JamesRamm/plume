@@ -121,7 +121,7 @@ class AuthHandler:
             userid = request_data[self._id_field]
             password = request_data[self._pass_field]
         except KeyError:
-            return falcon.HTTPBadRequest(
+            raise falcon.HTTPBadRequest(
                 'Password and {} should be submitted in request data'.format(self._id_field)
             )
 
