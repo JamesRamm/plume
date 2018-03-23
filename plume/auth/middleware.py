@@ -36,4 +36,3 @@ class AuthMiddleware(object):
         else:
             # If we get this far we are authorized
             req.context["user"] = user
-

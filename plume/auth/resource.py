@@ -1,6 +1,7 @@
 import simplejson
 import falcon
-from plume.resource import PlumeResource
+from plume.resource import PlumeResource, Collection
+from plume.hooks import validate_content_type
 
 class LoginResource(PlumeResource):
 
@@ -16,3 +17,15 @@ class LoginResource(PlumeResource):
             resp.body = simplejson.dumps({'token': token})
         except simplejson.scanner.JSONDecodeError:
             raise falcon.HTTPBadRequest(title="No data submitted in POST")
+
+class RegistrationResource(Collection):
+
+    def __init__(self, user_model, uri_template):
+        super(RegistrationResource, self).__init__(
+            user_model,
+            uri_template,
+            methods=('post', )
+        )
+
+
+
