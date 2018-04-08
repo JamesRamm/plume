@@ -7,7 +7,7 @@ class AuthMiddleware(object):
         self._exempt = exempt_resources
 
     def process_resource(self, req, resp, resource, params): # pylint: disable=unused-argument
-        if isinstance(resource, self._exempt):
+        if self._exempt and isinstance(resource, self._exempt):
             # No token necessary for the login route
             return
 
