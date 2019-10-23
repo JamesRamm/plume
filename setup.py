@@ -45,7 +45,7 @@ with open('HISTORY.rst') as history_file:
     HISTORY = history_file.read()
 
 REQUIREMENTS = [
-    'marshmallow==2.13.6',
+    'marshmallow==2.15.1',
     'pymongo==3.5.1',
     'falcon==1.3.0',
     'simplejson==3.11.1',
