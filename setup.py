@@ -49,7 +49,7 @@ REQUIREMENTS = [
     'pymongo==3.5.1',
     'falcon==1.3.0',
     'simplejson==3.11.1',
-    'pyjwt==1.5.3',
+    'pyjwt==2.4.0',
     'passlib==1.7.1'
 ]
 
